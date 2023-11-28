@@ -1,51 +1,51 @@
-﻿name,power,boss,minion,movement,health,armor,height,width,total,abilities
-Bane Spider,2,,TRUE,5,3,1,2,2,6,Poison
-Bane Spider Master,3,,TRUE,5,4,2,2,2,3,"Poison, Web"
-Beastman,1,,TRUE,4,3,2,1,1,6,+1 Damage
-Beastman Master,3,TRUE,TRUE,4,4,3,1,1,3,"+2 Damage, Command"
-Blood Ape,6,,TRUE,4,8,3,2,1,4,Leap
-Blood Ape Master,7,,TRUE,4,9,5,2,1,2,"Leap, Berserk"
-Chaos Beast,7,,,3,10,5,2,2,2,"Morph, Sorcery 1"
-Chaos Beast Master,10,TRUE,,3,11,6,2,2,1,"Morph, Sorcery 2, Black Curse"
-Dark Priest,3,,TRUE,4,4,2,1,1,4,Dark Prayer
-Dark Priest Master,5,,TRUE,4,5,3,1,1,2,"Dark Prayer, Black Curse"
-Deep Elf,4,,,5,6,3,1,1,2,"Shadowcloak, Pierce 3"
-Deep Elf Master,6,TRUE,,5,7,4,1,1,1,"Shadowcloak, Pierce 6, Frost"
-Demon,6,,,3,10,4,2,2,1,"Aura 1, Sorcery 2, Fear 1"
-Demon Master,10,TRUE,,3,11,5,2,2,1,"Aura 1, Sorcery 3, Fear 2"
-Dragon,6,,,4,10,3,3,2,1,"Burn, Breath, Pierce 5"
-Dragon Master,10,TRUE,,4,11,4,3,2,1,"Burn, Breath, Pierce 5, Fear 1"
-Ferrox,1,,TRUE,4,4,3,1,1,4,Bleed
-Ferrox Master,5,,TRUE,4,5,4,1,1,2,"Bleed, Leech"
-Giant,7,,,3,10,5,2,2,1,"Reach, Stun"
-Giant Master,8,TRUE,,3,11,6,2,2,1,"Reach, Stun, Sweep"
-Golem,6,,,3,7,5,2,2,2,Ironskin
-Golem Master,9,TRUE,,3,8,6,2,2,1,"Ironskin, Unstoppable"
-Hell Hound,2,,TRUE,4,4,1,2,1,4,"Breath, Pierce 3"
-Hell Hound Master,3,,TRUE,4,5,2,2,1,2,"Breath, Pierce 4, Aura 1"
-Ice Wyrm,6,,,4,9,3,3,2,2,"Tread Ice, Ghost"
-Ice Wyrm Master,9,TRUE,,4,10,4,3,2,1,"Tread Ice, Ghost, Swallow"
-Kobold,1,,TRUE,3,3,0,1,1,12,Swarm
-Kobold Master,1,,TRUE,3,4,1,1,1,6,"Swarm, Trickster"
-Lava Beetle,1,,TRUE,3,4,2,1,1,4,Blast 1
-Lava Beetle Master,1,,TRUE,3,5,3,1,1,2,"Blast 1, Burn"
-Manticore,3,,,4,6,2,2,2,2,"Quick Shot, Pierce 2"
-Manticore Master,5,TRUE,,4,7,3,2,2,1,"Quick Shot, Pierce 3, Poison"
-Medusa,3,,,4,5,2,1,1,2,Stun
-Medusa Master,5,,,4,6,3,1,1,1,"Stun, Quick Shot"
-Naga,3,,,3,6,3,2,2,2,"Grapple, Sorcery 1"
-Naga Master,5,,,3,7,4,2,2,1,"Grapple, Sorcery 2, Command"
-Ogre,5,,,3,6,4,2,2,2,Knockback
-Ogre Master,6,TRUE,,3,7,5,2,2,1,"Knockback, Undying"
-Razorwing,3,,TRUE,6,4,3,1,1,4,Fly
-Razorwing Master,4,,TRUE,8,5,4,1,1,2,"Fly, Stun"
-Shade,2,,TRUE,4,4,1,1,1,4,"Ghost, Stealth, Fly, Pierce 2"
-Shade Master,5,,TRUE,5,5,2,1,1,2,"Ghost, Stealth, Fly, Pierce 4"
-Skeleton,1,,TRUE,5,3,0,1,1,6,"Pierce 1, +1 Range"
-Skeleton Master,3,,TRUE,5,4,1,1,1,3,"Pierce 2, +2 Range, Undying"
-Sorcerer,3,,TRUE,4,4,2,1,1,4,Sorcery 3
-Sorcerer Master,5,TRUE,TRUE,4,5,3,1,1,2,"Sorcery 4, Undying"
-Troll,6,,,3,8,4,2,2,2,"Reach, Bash"
-Troll Master,9,TRUE,,3,9,6,2,2,1,"Reach, Bash, Sweep"
-Wendigo,3,,,5,5,2,2,1,2,"Stealth, Reach, Tread Ice"
-Wendigo Master,5,,,5,6,3,2,1,1,"Stealth, Reach, Tread Ice"
+﻿name,expansion,quantity,height,width,power,boss,minion,movement,health,armor,abilities
+Bane Spider,base,6,2,2,2,,TRUE,5,3,1,Poison
+Bane Spider Master,base,3,2,2,3,,TRUE,5,4,2,"Poison, Web"
+Beastman,base,6,1,1,1,,TRUE,4,3,2,+1 Damage
+Beastman Master,base,3,1,1,3,TRUE,TRUE,4,4,3,"+2 Damage, Command"
+Blood Ape,AoD,4,2,1,6,,TRUE,4,8,3,Leap
+Blood Ape Master,AoD,2,2,1,7,,TRUE,4,9,5,"Leap, Berserk"
+Chaos Beast,AoD,2,2,2,7,,,3,10,5,"Morph, Sorcery 1"
+Chaos Beast Master,AoD,1,2,2,10,TRUE,,3,11,6,"Morph, Sorcery 2, Black Curse"
+Dark Priest,AoD,4,1,1,3,,TRUE,4,4,2,Dark Prayer
+Dark Priest Master,AoD,2,1,1,5,,TRUE,4,5,3,"Dark Prayer, Black Curse"
+Deep Elf,AoD,2,1,1,4,,,5,6,3,"Shadowcloak, Pierce 3"
+Deep Elf Master,AoD,1,1,1,6,TRUE,,5,7,4,"Shadowcloak, Pierce 6, Frost"
+Demon,base,1,2,2,6,,,3,10,4,"Aura 1, Sorcery 2, Fear 1"
+Demon Master,base,1,2,2,10,TRUE,,3,11,5,"Aura 1, Sorcery 3, Fear 2"
+Dragon,base,1,3,2,6,,,4,10,3,"Burn, Breath, Pierce 5"
+Dragon Master,base,1,3,2,10,TRUE,,4,11,4,"Burn, Breath, Pierce 5, Fear 1"
+Ferrox,WoD,4,1,1,1,,TRUE,4,4,3,Bleed
+Ferrox Master,WoD,2,1,1,5,,TRUE,4,5,4,"Bleed, Leech"
+Giant,base,1,2,2,7,,,3,10,5,"Reach, Stun"
+Giant Master,base,1,2,2,8,TRUE,,3,11,6,"Reach, Stun, Sweep"
+Golem,WoD,2,2,2,6,,,3,7,5,Ironskin
+Golem Master,WoD,1,2,2,9,TRUE,,3,8,6,"Ironskin, Unstoppable"
+Hell Hound,base,4,2,1,2,,TRUE,4,4,1,"Breath, Pierce 3"
+Hell Hound Master,base,2,2,1,3,,TRUE,4,5,2,"Breath, Pierce 4, Aura 1"
+Ice Wyrm,ToI,2,3,2,6,,,4,9,3,"Tread Ice, Ghost"
+Ice Wyrm Master,ToI,1,3,2,9,TRUE,,4,10,4,"Tread Ice, Ghost, Swallow"
+Kobold,WoD,12,1,1,1,,TRUE,3,3,0,Swarm
+Kobold Master,WoD,6,1,1,1,,TRUE,3,4,1,"Swarm, Trickster"
+Lava Beetle,ToI,4,1,1,1,,TRUE,3,4,2,Blast 1
+Lava Beetle Master,ToI,2,1,1,1,,TRUE,3,5,3,"Blast 1, Burn"
+Manticore,base,2,2,2,3,,,4,6,2,"Quick Shot, Pierce 2"
+Manticore Master,base,1,2,2,5,TRUE,,4,7,3,"Quick Shot, Pierce 3, Poison"
+Medusa,ToI,2,1,1,3,,,4,5,2,Stun
+Medusa Master,ToI,1,1,1,5,,,4,6,3,"Stun, Quick Shot"
+Naga,base,2,2,2,3,,,3,6,3,"Grapple, Sorcery 1"
+Naga Master,base,1,2,2,5,,,3,7,4,"Grapple, Sorcery 2, Command"
+Ogre,base,2,2,2,5,,,3,6,4,Knockback
+Ogre Master,base,1,2,2,6,TRUE,,3,7,5,"Knockback, Undying"
+Razorwing,base,4,1,1,3,,TRUE,6,4,3,Fly
+Razorwing Master,base,2,1,1,4,,TRUE,8,5,4,"Fly, Stun"
+Shade,ToI,4,1,1,2,,TRUE,4,4,1,"Ghost, Stealth, Fly, Pierce 2"
+Shade Master,ToI,2,1,1,5,,TRUE,5,5,2,"Ghost, Stealth, Fly, Pierce 4"
+Skeleton,base,6,1,1,1,,TRUE,5,3,0,"Pierce 1, +1 Range"
+Skeleton Master,base,3,1,1,3,,TRUE,5,4,1,"Pierce 2, +2 Range, Undying"
+Sorcerer,base,4,1,1,3,,TRUE,4,4,2,Sorcery 3
+Sorcerer Master,base,2,1,1,5,TRUE,TRUE,4,5,3,"Sorcery 4, Undying"
+Troll,AoD,2,2,2,6,,,3,8,4,"Reach, Bash"
+Troll Master,AoD,1,2,2,9,TRUE,,3,9,6,"Reach, Bash, Sweep"
+Wendigo,ToI,2,2,1,3,,,5,5,2,"Stealth, Reach, Tread Ice"
+Wendigo Master,ToI,1,2,1,5,,,5,6,3,"Stealth, Reach, Tread Ice"
