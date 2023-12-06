@@ -1,0 +1,11 @@
+﻿id,colour,expansion,quantity,height,width
+glyph,GLYPH,base,10,1,1
+water_1,WATER,base,4,1,1
+water_2,WATER,base,2,2,1
+water_3,WATER,base,1,3,1
+pit_1,PIT,base,5,1,1
+pit_2,PIT,base,2,2,1
+pit_3,PIT,base,1,3,1
+obstacle_1,OBSTACLE,base,5,1,1
+obstacle_2,OBSTACLE,base,2,2,1
+obstacle_3,OBSTACLE,base,1,3,1

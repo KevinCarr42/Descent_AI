@@ -1,0 +1,17 @@
+﻿id,object,colour
+0,NOTHING,black
+0.5,JOIN,magenta
+1,FLOOR,lightgrey
+10,MONSTER,lime
+20,MASTER,red
+30,OBSTACLE,grey
+31,PIT,black
+32,TRAP,darkred
+33,ENTRANCE,white
+34,GLYPH,white
+35,WATER,blue
+40,HEALING,cyan
+41,VITALITY,darkorange
+42,TREASURE,yellow
+43,MONEY,darkgreen
+99,ERROR,magenta
