@@ -1,0 +1,9 @@
+archetype,melee,range,magic,target,move_plus,move_max,move_half,move_2,move_0,flee_trigger,swarm_trigger,bane_spider,beastman,blood_ape,chaos_beast,dark_priest,deep_elf,demon,dragon,ferrox,giant,golem,hell_hound,ice_wyrm,kobold,lava_beetle,manticore,medusa,naga,ogre,razorwing,shade,skeleton,sorcerer,troll,wendigo
+sniper,,TRUE,TRUE,,,,,,,,,TRUE,,,,,,,,,,,,,,,,,,,,,,,,
+skirmisher,TRUE,,,,,,,,,,,,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,
+soldier,TRUE,,,,,,,,,,,,TRUE,,,,,,,,,,,,,,,,,,,,,,,
+bombardier,,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+controller,,,TRUE,,,,,,,,,TRUE,,,,,,,,,,,,,,,,,,,,,,,,
+berserker,TRUE,,,,,,,,,,,,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,
+stalker,TRUE,TRUE,TRUE,,,,,,,,,TRUE,,,,,,,,,,,,,,,,,,,,,,,,
+thief,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
