@@ -1,10 +1,10 @@
-archetype,melee,range,magic,target,special,engaged,lte_range,lte_move_range,gt_move_range,flee_trigger,swarm_trigger,bane_spider,beastman,blood_ape,chaos_beast,dark_priest,deep_elf,demon,dragon,ferrox,giant,golem,hell_hound,ice_wyrm,kobold,lava_beetle,manticore,medusa,naga,ogre,razorwing,shade,skeleton,sorcerer,troll,wendigo
-sniper,,TRUE,TRUE,max base HP,,,,move to safe attack range > attack > move to max distance from characters,move toward target,within movement,command,TRUE,,,,,,,,,,,,,,,,,,,,,,,,
-skirmisher,TRUE,,,closest engaged,,attack,,move to target > attack,move toward target,half HP,command,,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,
+archetype,melee,range,magic,target,special,engaged,range_or_move,range_plus_move,greater,flee_trigger,swarm_trigger,bane_spider,beastman,blood_ape,chaos_beast,dark_priest,deep_elf,demon,dragon,ferrox,giant,golem,hell_hound,ice_wyrm,kobold,lava_beetle,manticore,medusa,naga,ogre,razorwing,shade,skeleton,sorcerer,troll,wendigo
+sniper,,TRUE,TRUE,max base HP,+2 range,,,move to range > attack > flee,move to target,hero within move,command,TRUE,,,,,,,,,,,,,,,,,,,,,,,,
+skirmisher,TRUE,,,closest engaged,,attack > flee,move to target > attack > flee,move to target > attack,move to target,half HP,command,,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,
 soldier,TRUE,,,closest unengaged,,,,,,,,,TRUE,,,,,,,,,,,,,,,,,,,,,,,
 bombardier,,TRUE,TRUE,"max targets, min current HP",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 controller,,,TRUE,"max targets, highest movement",,,,,,,,TRUE,,,,,,,,,,,,,,,,,,,,,,,,
-berserker,TRUE,,,closest,,,,,,,,,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,
+berserker,TRUE,,,closest,,attack 2x,,,,,,,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,
 stalker,TRUE,TRUE,TRUE,min current HP,,,,,,half HP,,TRUE,,,,,,,,,,,,,,,,,,,,,,,,
 thief,TRUE,TRUE,,most gold,,,,,,half HP,,,,,,,,,,,,,,,,,,,,,,,,,,
 swarm,TRUE,,,"engaged, closest",,,,,,,command,,,,,,,,,,,,,,,,,,,,,,,,,
