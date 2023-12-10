@@ -1,51 +1,51 @@
-﻿name,rank,expansion,quantity,height,width,power,boss,minion,movement,health,armor,abilities,attack_type
-Bane Spider,minion,base,6,2,2,2,,TRUE,5,3,1,Poison,magic
-Bane Spider Master,master,base,3,2,2,3,,TRUE,5,4,2,"Poison, Web",magic
-Beastman,minion,base,6,1,1,1,,TRUE,4,3,2,+1 Damage,melee
-Beastman Master,master,base,3,1,1,3,TRUE,TRUE,4,4,3,"+2 Damage, Command",melee
-Blood Ape,minion,AoD,4,2,1,6,,TRUE,4,8,3,Leap,melee
-Blood Ape Master,master,AoD,2,2,1,7,,TRUE,4,9,5,"Leap, Berserk",melee
-Chaos Beast,minion,AoD,2,2,2,7,,,3,10,5,"Morph, Sorcery 1",unknown
-Chaos Beast Master,master,AoD,1,2,2,10,TRUE,,3,11,6,"Morph, Sorcery 2, Black Curse",unknown
-Dark Priest,minion,AoD,4,1,1,3,,TRUE,4,4,2,Dark Prayer,magic
-Dark Priest Master,master,AoD,2,1,1,5,,TRUE,4,5,3,"Dark Prayer, Black Curse",magic
-Deep Elf,minion,AoD,2,1,1,4,,,5,6,3,"Shadowcloak, Pierce 3",melee
-Deep Elf Master,master,AoD,1,1,1,6,TRUE,,5,7,4,"Shadowcloak, Pierce 6, Frost",melee
-Demon,minion,base,1,2,2,6,,,3,10,4,"Aura 1, Sorcery 2, Fear 1",magic
-Demon Master,master,base,1,2,2,10,TRUE,,3,11,5,"Aura 1, Sorcery 3, Fear 2",magic
-Dragon,minion,base,1,3,2,6,,,4,10,3,"Burn, Breath, Pierce 5",ranged
-Dragon Master,master,base,1,3,2,10,TRUE,,4,11,4,"Burn, Breath, Pierce 5, Fear 1",ranged
-Ferrox,minion,WoD,4,1,1,1,,TRUE,4,4,3,Bleed,melee
-Ferrox Master,master,WoD,2,1,1,5,,TRUE,4,5,4,"Bleed, Leech",melee
-Giant,minion,base,1,2,2,7,,,3,10,5,"Reach, Stun",melee
-Giant Master,master,base,1,2,2,8,TRUE,,3,11,6,"Reach, Stun, Sweep",melee
-Golem,minion,WoD,2,2,2,6,,,3,7,5,Ironskin,melee
-Golem Master,master,WoD,1,2,2,9,TRUE,,3,8,6,"Ironskin, Unstoppable",melee
-Hell Hound,minion,base,4,2,1,2,,TRUE,4,4,1,"Breath, Pierce 3",magic
-Hell Hound Master,master,base,2,2,1,3,,TRUE,4,5,2,"Breath, Pierce 4, Aura 1",magic
-Ice Wyrm,minion,ToI,2,3,2,6,,,4,9,3,"Tread Ice, Ghost",ranged
-Ice Wyrm Master,master,ToI,1,3,2,9,TRUE,,4,10,4,"Tread Ice, Ghost, Swallow",ranged
-Kobold,minion,WoD,12,1,1,1,,TRUE,3,3,0,Swarm,melee
-Kobold Master,master,WoD,6,1,1,1,,TRUE,3,4,1,"Swarm, Trickster",melee
-Lava Beetle,minion,ToI,4,1,1,1,,TRUE,3,4,2,Blast 1,ranged
-Lava Beetle Master,master,ToI,2,1,1,1,,TRUE,3,5,3,"Blast 1, Burn",ranged
-Manticore,minion,base,2,2,2,3,,,4,6,2,"Quick Shot, Pierce 2",ranged
-Manticore Master,master,base,1,2,2,5,TRUE,,4,7,3,"Quick Shot, Pierce 3, Poison",ranged
-Medusa,minion,ToI,2,1,1,3,,,4,5,2,Stun,magic
-Medusa Master,master,ToI,1,1,1,5,,,4,6,3,"Stun, Quick Shot",magic
-Naga,minion,base,2,2,2,3,,,3,6,3,"Grapple, Sorcery 1",magic
-Naga Master,master,base,1,2,2,5,,,3,7,4,"Grapple, Sorcery 2, Command",magic
-Ogre,minion,base,2,2,2,5,,,3,6,4,Knockback,melee
-Ogre Master,master,base,1,2,2,6,TRUE,,3,7,5,"Knockback, Undying",melee
-Razorwing,minion,base,4,1,1,3,,TRUE,6,4,3,Fly,melee
-Razorwing Master,master,base,2,1,1,4,,TRUE,8,5,4,"Fly, Stun",melee
-Shade,minion,ToI,4,1,1,2,,TRUE,4,4,1,"Ghost, Stealth, Fly, Pierce 2",magic
-Shade Master,master,ToI,2,1,1,5,,TRUE,5,5,2,"Ghost, Stealth, Fly, Pierce 4",magic
-Skeleton,minion,base,6,1,1,1,,TRUE,5,3,0,"Pierce 1, +1 Range",ranged
-Skeleton Master,master,base,3,1,1,3,,TRUE,5,4,1,"Pierce 2, +2 Range, Undying",ranged
-Sorcerer,minion,base,4,1,1,3,,TRUE,4,4,2,Sorcery 3,magic
-Sorcerer Master,master,base,2,1,1,5,TRUE,TRUE,4,5,3,"Sorcery 4, Undying",magic
-Troll,minion,AoD,2,2,2,6,,,3,8,4,"Reach, Bash",melee
-Troll Master,master,AoD,1,2,2,9,TRUE,,3,9,6,"Reach, Bash, Sweep",melee
-Wendigo,minion,ToI,2,2,1,3,,,5,5,2,"Stealth, Reach, Tread Ice",melee
-Wendigo Master,master,ToI,1,2,1,5,,,5,6,3,"Stealth, Reach, Tread Ice",melee
+﻿name,rank,expansion,quantity,height,width,power,boss,minion,movement,health,armor,n_red,n_blue,n_white,n_green,n_yellow,n_black,n_morph,abilities,attack_type
+Bane Spider,minion,base,6,2,2,2,,TRUE,5,3,1,,,1,1,,,,Poison,magic
+Bane Spider Master,master,base,3,2,2,3,,TRUE,5,4,2,,,1,1,,1,,"Poison, Web",magic
+Beastman,minion,base,6,1,1,1,,TRUE,4,3,2,1,,,1,,,,+1 Damage,melee
+Beastman Master,master,base,3,1,1,3,TRUE,TRUE,4,4,3,1,,,1,,1,,"+2 Damage, Command",melee
+Blood Ape,minion,AoD,4,2,1,6,,TRUE,4,8,3,1,,,1,1,,,Leap,melee
+Blood Ape Master,master,AoD,2,2,1,7,,TRUE,4,9,5,1,,,1,1,1,,"Leap, Berserk",melee
+Chaos Beast,minion,AoD,2,2,2,7,,,3,10,5,,,,,,,3,"Morph, Sorcery 1",unknown
+Chaos Beast Master,master,AoD,1,2,2,10,TRUE,,3,11,6,,,,,,1,3,"Morph, Sorcery 2, Black Curse",unknown
+Dark Priest,minion,AoD,4,1,1,3,,TRUE,4,4,2,,,1,,,3,,Dark Prayer,magic
+Dark Priest Master,master,AoD,2,1,1,5,,TRUE,4,5,3,,,1,,,5,,"Dark Prayer, Black Curse",magic
+Deep Elf,minion,AoD,2,1,1,4,,,5,6,3,1,,,1,,,,"Shadowcloak, Pierce 3",melee
+Deep Elf Master,master,AoD,1,1,1,6,TRUE,,5,7,4,1,,,1,,1,,"Shadowcloak, Pierce 6, Frost",melee
+Demon,minion,base,1,2,2,6,,,3,10,4,,,1,1,2,,,"Aura 1, Sorcery 2, Fear 1",magic
+Demon Master,master,base,1,2,2,10,TRUE,,3,11,5,,,1,2,1,1,,"Aura 1, Sorcery 3, Fear 2",magic
+Dragon,minion,base,1,3,2,6,,,4,10,3,,1,,1,2,,,"Burn, Breath, Pierce 5",ranged
+Dragon Master,master,base,1,3,2,10,TRUE,,4,11,4,,1,,2,1,1,,"Burn, Breath, Pierce 5, Fear 1",ranged
+Ferrox,minion,WoD,4,1,1,1,,TRUE,4,4,3,1,,,1,,,,Bleed,melee
+Ferrox Master,master,WoD,2,1,1,5,,TRUE,4,5,4,1,,,1,,1,,"Bleed, Leech",melee
+Giant,minion,base,1,2,2,7,,,3,10,5,1,,,2,1,,,"Reach, Stun",melee
+Giant Master,master,base,1,2,2,8,TRUE,,3,11,6,1,,,2,1,1,,"Reach, Stun, Sweep",melee
+Golem,minion,WoD,2,2,2,6,,,3,7,5,1,,,1,1,,,Ironskin,melee
+Golem Master,master,WoD,1,2,2,9,TRUE,,3,8,6,1,,,1,1,1,,"Ironskin, Unstoppable",melee
+Hell Hound,minion,base,4,2,1,2,,TRUE,4,4,1,,1,,,1,,,"Breath, Pierce 3",magic
+Hell Hound Master,master,base,2,2,1,3,,TRUE,4,5,2,,1,,,1,1,,"Breath, Pierce 4, Aura 1",magic
+Ice Wyrm,minion,ToI,2,3,2,6,,,4,9,3,,1,,2,,1,,"Tread Ice, Ghost",ranged
+Ice Wyrm Master,master,ToI,1,3,2,9,TRUE,,4,10,4,,1,,2,,2,,"Tread Ice, Ghost, Swallow",ranged
+Kobold,minion,WoD,12,1,1,1,,TRUE,3,3,0,1,,,,,,,Swarm,melee
+Kobold Master,master,WoD,6,1,1,1,,TRUE,3,4,1,1,,,,,1,,"Swarm, Trickster",melee
+Lava Beetle,minion,ToI,4,1,1,1,,TRUE,3,4,2,,1,,1,,,,Blast 1,ranged
+Lava Beetle Master,master,ToI,2,1,1,1,,TRUE,3,5,3,,1,,1,,1,,"Blast 1, Burn",ranged
+Manticore,minion,base,2,2,2,3,,,4,6,2,,1,,1,1,,,"Quick Shot, Pierce 2",ranged
+Manticore Master,master,base,1,2,2,5,TRUE,,4,7,3,,1,,1,1,1,,"Quick Shot, Pierce 3, Poison",ranged
+Medusa,minion,ToI,2,1,1,3,,,4,5,2,,,1,1,1,,,Stun,magic
+Medusa Master,master,ToI,1,1,1,5,,,4,6,3,,,1,1,1,1,,"Stun, Quick Shot",magic
+Naga,minion,base,2,2,2,3,,,3,6,3,,,1,1,1,,,"Grapple, Sorcery 1",magic
+Naga Master,master,base,1,2,2,5,,,3,7,4,,,1,1,1,1,,"Grapple, Sorcery 2, Command",magic
+Ogre,minion,base,2,2,2,5,,,3,6,4,1,,,2,,,,Knockback,melee
+Ogre Master,master,base,1,2,2,6,TRUE,,3,7,5,1,,,2,,1,,"Knockback, Undying",melee
+Razorwing,minion,base,4,1,1,3,,TRUE,6,4,3,1,,,,2,,,Fly,melee
+Razorwing Master,master,base,2,1,1,4,,TRUE,8,5,4,1,,,,2,1,,"Fly, Stun",melee
+Shade,minion,ToI,4,1,1,2,,TRUE,4,4,1,,,1,,1,,,"Ghost, Stealth, Fly, Pierce 2",magic
+Shade Master,master,ToI,2,1,1,5,,TRUE,5,5,2,,,1,,1,1,,"Ghost, Stealth, Fly, Pierce 4",magic
+Skeleton,minion,base,6,1,1,1,,TRUE,5,3,0,,1,,1,,,,"Pierce 1, +1 Range",ranged
+Skeleton Master,master,base,3,1,1,3,,TRUE,5,4,1,,1,,1,,1,,"Pierce 2, +2 Range, Undying",ranged
+Sorcerer,minion,base,4,1,1,3,,TRUE,4,4,2,,,1,,1,,,Sorcery 3,magic
+Sorcerer Master,master,base,2,1,1,5,TRUE,TRUE,4,5,3,,,1,,1,1,,"Sorcery 4, Undying",magic
+Troll,minion,AoD,2,2,2,6,,,3,8,4,1,,,,2,,,"Reach, Bash",melee
+Troll Master,master,AoD,1,2,2,9,TRUE,,3,9,6,1,,,1,1,,,"Reach, Bash, Sweep",melee
+Wendigo,minion,ToI,2,2,1,3,,,5,5,2,1,,,1,,1,,"Stealth, Reach, Tread Ice",melee
+Wendigo Master,master,ToI,1,2,1,5,,,5,6,3,1,,,1,,3,,"Stealth, Reach, Tread Ice",melee

@@ -1,13 +1,13 @@
-archetype,melee,range,magic,target,special,engaged,range,move,range_plus_move,greater,flee_trigger,swarm_trigger,bane_spider,beastman,blood_ape,chaos_beast,dark_priest,deep_elf,demon,dragon,ferrox,giant,golem,hell_hound,ice_wyrm,kobold,lava_beetle,manticore,medusa,naga,ogre,razorwing,shade,skeleton,sorcerer,troll,wendigo
-sniper,,TRUE,TRUE,max base HP,+2 range,,aim > attack,move to range > attack,move to range > attack,move to target > attack,hero within move,command,TRUE,,,,,,,,,,,,,,,,,,,,,,,,
-skirmisher,TRUE,,,closest engaged,,attack > flee,,move to target > attack > flee,,move to target > attack,half HP,command,,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,
-soldier,TRUE,,,closest unengaged,,,,,,,,,,TRUE,,,,,,,,,,,,,,,,,,,,,,,
-bombardier,,TRUE,TRUE,"max targets, min current HP",,,aim > attack,move to range > attack,move to range > attack,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-controller,,,TRUE,"max targets, highest movement",,,aim > attack,move to range > attack,move to range > attack,,,,TRUE,,,,,,,,,,,,,,,,,,,,,,,,
-berserker,TRUE,,,closest,,attack 2x,,,,,,,,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,
-stalker,TRUE,TRUE,TRUE,min current HP,,,,,,,half HP,,TRUE,,,,,,,,,,,,,,,,,,,,,,,,
-thief,TRUE,TRUE,,most gold,,,,,,,half HP,,,,,,,,,,,,,,,,,,,,,,,,,,
-swarm,TRUE,,,"engaged, closest",,,,,,,,command,,,,,,,,,,,,,,,,,,,,,,,,,
-minion,TRUE,TRUE,TRUE,closest,"2x spawn, 1HP",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-tank,TRUE,,,max base HP,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-undead,TRUE,TRUE,TRUE,,surges drain HP,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+archetype,melee,range,magic,boss,target,boss,special,engaged,lt_range,range,gt_range,move,gt_move_range,flee_trigger,swarm_trigger,bane_spider,beastman,blood_ape,chaos_beast,dark_priest,deep_elf,demon,dragon,ferrox,giant,golem,hell_hound,ice_wyrm,kobold,lava_beetle,manticore,medusa,naga,ogre,razorwing,shade,skeleton,sorcerer,troll,wendigo
+sniper,,TRUE,TRUE,TRUE,max base HP,"+3 range, +3 move",+2 range,,move to range > attack,aim > attack,move to range > attack,move to range > attack,move to target > attack,hero within move,command,TRUE,,,TRUE,TRUE,,,,,,,,,,,TRUE,TRUE,TRUE,,,,TRUE,TRUE,,
+skirmisher,TRUE,,,TRUE,closest engaged,"+3 damage, +3 move",,attack > flee,,,,move to target > attack > flee,move to target > attack,half HP,command,,TRUE,TRUE,,,TRUE,,,TRUE,TRUE,TRUE,,TRUE,TRUE,,,,,TRUE,TRUE,,,,TRUE,TRUE
+soldier,TRUE,,,TRUE,closest unengaged,"+2 armor, pierce +2",form a line starting form first target,,,,,,,,,,TRUE,TRUE,,,,,,TRUE,,,,,,,,,,,,,,,,
+bombardier,,TRUE,TRUE,TRUE,"max targets, min current HP",blast +1,,,,aim > attack,move to range > attack,move to range > attack,,,,,,,TRUE,,,TRUE,TRUE,,,,TRUE,,,TRUE,TRUE,,TRUE,,,TRUE,TRUE,TRUE,,
+controller,,,TRUE,TRUE,"max targets, highest movement",stun,,,,aim > attack,move to range > attack,move to range > attack,,,,TRUE,,,TRUE,TRUE,,TRUE,,,,,,,,,,TRUE,TRUE,,,TRUE,,TRUE,,
+berserker,TRUE,,,TRUE,closest,always battle,,attack 2x,,,,,,,,,TRUE,TRUE,,,,,,TRUE,TRUE,TRUE,,TRUE,TRUE,,,,,TRUE,TRUE,,,,TRUE,TRUE
+stalker,TRUE,TRUE,TRUE,TRUE,min current HP,pierce +5,,,,,,,,half HP,,TRUE,,,,TRUE,TRUE,,,TRUE,,,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,TRUE,TRUE,TRUE,,
+thief,TRUE,TRUE,,,most gold,,,,,,,,,half HP,,,TRUE,,,,TRUE,,,TRUE,,,,,TRUE,,,,,,,,,,,
+swarm,TRUE,,,,"engaged, closest",,,,,,,,,,command,,,,,,,,,TRUE,,,,,TRUE,TRUE,,,,,TRUE,,,,,
+minion,TRUE,TRUE,TRUE,,closest,,"2x spawn, 1HP",,,,,,,,,TRUE,TRUE,,,,,,,TRUE,,,,,TRUE,,,,,,TRUE,,TRUE,,,
+tank,TRUE,,,TRUE,max base HP,+4 armor,+2 armor,,,,,,,,,TRUE,TRUE,,,,,,,TRUE,TRUE,TRUE,,TRUE,,,,,,TRUE,TRUE,,,,TRUE,TRUE
+undead,TRUE,TRUE,TRUE,TRUE,,undying 2,surges drain HP,,,,,,,,,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE
