@@ -12,6 +12,7 @@ MONSTER_DF['rank'] = pd.Categorical(MONSTER_DF['rank'] , categories=['minion', '
 MAP_TILE_DF = pd.read_csv('tile_import.csv')
 OBSTACLE_DF = pd.read_csv('obstacle_import.csv')
 COLOUR_DF = pd.read_csv('colour_import.csv')
+ARCHETYPES = pd.read_csv('archetype_import.csv')
 
 # colours
 def get_object_colour_id(name_of_colour):
@@ -62,12 +63,12 @@ class Treasures:
 
 class Monsters:
     # constants
-    MIN_ENEMY_PER_ENCOUNTER = 2
+    MIN_ENEMY_PER_ENCOUNTER = 3
     
-    def __init__(self, dataframe, n_monsters=3, n_encounters=4, boss=True, sorted_battles=True, use_all_minis=False):
-        self._MINIONS = sorted(list({x.replace('Master', '').strip() for x in dataframe[dataframe.minion].name}))
-        self._NOT_MINIONS = sorted(list({x.replace('Master', '').strip() for x in dataframe[~dataframe.minion].name}))
-        self._BOSSES = sorted(list({x.replace('Master', '').strip() for x in dataframe[dataframe.boss].name}))
+    def __init__(self, n_monsters=5, n_encounters=4, boss=True, sorted_battles=True, use_all_minis=False):
+        self._MINIONS = sorted(list({x.replace('Master', '').strip() for x in MONSTER_DF[MONSTER_DF.minion].name}))
+        self._NOT_MINIONS = sorted(list({x.replace('Master', '').strip() for x in MONSTER_DF[~MONSTER_DF.minion].name}))
+        self._BOSSES = sorted(list({x.replace('Master', '').strip() for x in MONSTER_DF[MONSTER_DF.boss].name}))
         self.quest_monsters = None
         self.quest_boss = None
         
@@ -76,10 +77,10 @@ class Monsters:
         self.choose_boss(boss)
         
         # summarise relevant data
-        self._DATA = dataframe[dataframe.name.str.contains('|'.join(self.quest_monsters))]
+        self._DATA = MONSTER_DF[MONSTER_DF.name.str.contains('|'.join(self.quest_monsters))]
         self._DATA.loc[:, 'boss'] = False
         if boss:
-            boss_df = dataframe[dataframe.name.str.contains(self.quest_boss) & dataframe.boss].copy()
+            boss_df = MONSTER_DF[MONSTER_DF.name.str.contains(self.quest_boss) & MONSTER_DF.boss].copy()
             boss_df['rank'] = 'boss'
             self._DATA = pd.concat([self._DATA, boss_df])
             self._DATA.iloc[-1, 0] = self._DATA.iloc[-1, 0].replace('Master', 'Boss')
@@ -110,6 +111,7 @@ class Monsters:
             self.quest_boss = np.random.choice(self._BOSSES)
             
     def choose_minis(self, use_all_minis, n_encounters):
+        # TODO: fix bug where n is too high for number of minis (maybe start small, add monsters as required)
         for monster in self.quest_monsters:
             n_normal, n_master = self._DATA.loc[self._DATA.name.str.contains(monster) & ~self._DATA.name.str.contains('Boss'), 'quantity']
             for _ in range(n_normal):
@@ -258,7 +260,7 @@ class DescentScenario:
     CROP_MAP = True
     BOSS_POWER_LIST = ['double HP', 'double attack dice', 'resurrect unless miss on 3 red']
     
-    def __init__(self, n_monsters=3, n_encounters=4, n_treasure_per_encounter=3, boss=True, sorted_battles=True, use_all_minis=False, 
+    def __init__(self, n_monsters=5, n_encounters=4, n_treasure_per_encounter=3, boss=True, sorted_battles=True, use_all_minis=False, 
                  always_chest=True, unrevealed_areas=True, MAX_H=50, MAX_W=40, min_area_size=30, max_area_size=80):
         # obj constants
         self.MAX_H = MAX_H
@@ -269,7 +271,7 @@ class DescentScenario:
         self.MAX_AREA_SIZE = max_area_size
 
         # create objects
-        self.monsters_obj = Monsters(MONSTER_DF, n_monsters, n_encounters, boss, sorted_battles, use_all_minis)
+        self.monsters_obj = Monsters(n_monsters, n_encounters, boss, sorted_battles, use_all_minis)
         self.treasures_obj = Treasures(n_encounters, n_treasure_per_encounter, always_chest)
         self.map_tiles_obj = Tiles(MAP_TILE_DF, True)
         self.monster_tiles_obj = Tiles(self.monsters_obj)
@@ -794,11 +796,13 @@ class DescentScenario:
     def create_map(self, n_attempts=10):
         for i in range(n_attempts):
             self.__init__()
-            print(f'\nMAP CREATION ATTEMPT # {i+1}')
+            if self.DEBUGGING:
+                print(f'\nMAP CREATION ATTEMPT # {i+1}')
             self._create_map_loop()
             if self.current_area == self.N_ENCOUNTERS:
                 if self.current_area_size >= self.MIN_AREA_SIZE:
-                    print('MAP COMPLETED!')
+                    if self.DEBUGGING:
+                        print('MAP COMPLETED!')
                     display(self.show_areas)
                     return
 
@@ -896,4 +900,188 @@ class DescentScenario:
 
     def remove_some_treasure(self):
         pass
+
+
+class MonsterAI:
+    # TODO: for now master and minions have the same archetype, it is possible to tweak this
+
+    def __init__(self, monster_name, archetype=None, boss=False):
+        if monster_name not in list(MONSTER_DF.name):
+            raise ThisIsNotAMonsterYouCanChoose
+        self.monster_name = monster_name
+        self.boss = boss
+        self._archetype_data = self.get_archetype_data(archetype)
+
+    def get_archetype_data(self, archetype):
+        columns = ['archetype', 'archetype_first', 'target', 'range_modifier', 'move_modifier', 'special', 'boss_special', 'lt_range', 'at_range', 'gt_range', 'gt_move_range']
+        all_eligible_archetypes = ARCHETYPES.loc[ARCHETYPES[self.monster_name].notna(), columns]
+        if archetype:
+            if archetype not in list(all_eligible_archetypes['archetype']):
+                raise ThisIsNotAReasonableChoiceForThatMonsterError
+            return all_eligible_archetypes[all_eligible_archetypes['archetype']==archetype]
+        return all_eligible_archetypes.sample()
+
+    @property
+    def archetype(self):
+        return self._archetype_data['archetype'].iloc[0]
+
+    @property
+    def target(self):
+        return self._archetype_data['target'].iloc[0]
+    
+    @property
+    def range(self):
+        range = MONSTER_DF.loc[MONSTER_DF['name']==self.monster_name, 'range'].iloc[0]
+        if self._archetype_data['range_modifier'].notnull().iloc[0]:
+            if self.boss:
+                range += eval(self._archetype_data['range_modifier'].iloc[0])[1]
+            else:
+                range += eval(self._archetype_data['range_modifier'].iloc[0])[0]
+        return range
+
+    @property
+    def movement(self):
+        movement = MONSTER_DF.loc[MONSTER_DF['name']==self.monster_name, 'movement'].iloc[0]
+        if self._archetype_data['move_modifier'].notnull().iloc[0]:
+            if self.boss:
+                movement += eval(self._archetype_data['move_modifier'].iloc[0])[1]
+            else:
+                movement += eval(self._archetype_data['move_modifier'].iloc[0])[0]
+        return movement
+    
+    @property
+    def lt_range(self):
+        return self._archetype_data['lt_range'].iloc[0]
+    
+    @property
+    def at_range(self):
+        return self._archetype_data['at_range'].iloc[0]
+    
+    @property
+    def gt_range(self):
+        return self._archetype_data['gt_range'].iloc[0]
+    
+    @property
+    def gt_move_range(self):
+        return self._archetype_data['gt_move_range'].iloc[0]
+
+    @property
+    def special(self):
+        if self.boss:
+            return self._archetype_data['boss_special'].iloc[0]
+        return self._archetype_data['special'].iloc[0]
+    
+    @property
+    def archetype_first(self):
+        return self._archetype_data['archetype_first'].iloc[0]
+
+    def boss_stuff(self):
+        # TODO: add random boss stuff (2x hitpoints, etc)?
+        pass
+
+    def summary(self):
+        print('------------------------------------------------------------------')
+        if self.archetype == 'Normal':
+            print(self.monster_name)
+        elif self.archetype_first:
+            print(f"{self.archetype} {self.monster_name}")
+        else:
+            print(f"{self.monster_name} {self.archetype} ")
+        print('------------------------------------------------------------------\n')
+
+        if pd.notnull(self.special):
+            print('Special Powers:', self.special.title().replace('Hp', 'HP'))
+
+        print('Target:', self.target.title())
+
+        attack_type = MONSTER_DF.loc[MONSTER_DF['name']==self.monster_name, 'attack_type'].iloc[0]
+        if attack_type == 'melee':
+            attack_range = 1 if 'reach' in MONSTER_DF.loc[MONSTER_DF.name==self.monster_name, 'abilities'].iloc[0].lower() else 0
+            print('Attack Range:', attack_range, '\n')
+        else:
+            attack_range = self.range
+            print('Attack Range:', attack_range-1, 'to', attack_range+1, '\n')
+
+        print('Combat AI Instructions')
+        print('----------------------')
+
+        if attack_type == 'melee':
+            if self.at_range:
+                print('If at attack range: ', self.at_range)
+            if self.gt_range:
+                print(f'If within {self.movement + attack_range} spaces: ', self.gt_range)
+            if self.gt_move_range:
+                print(f'Otherwise: ', self.gt_move_range)
+        else:
+            if self.lt_range:
+                print(f'If closer than {self.range-1} spaces: ', self.lt_range)
+            if self.at_range:
+                print(f'If {attack_range-1} to {attack_range+1} spaces: ', self.at_range)
+            if self.gt_range:
+                print(f'If within {self.movement + attack_range} spaces: ', self.gt_range)
+            if self.gt_move_range:
+                print('Otherwise: ', self.gt_move_range)
+        
+        print()
+
+
+class AIOverlord:
+    def __init__(self, monsters_name_list, boss_monster_name=None, all_undead=True, archetype=None):
+        self.monsters = dict()
+        self._archetype = archetype
+        self._not_undead = False
+        for monster in monsters_name_list:
+            for _ in range(10):
+                self.monsters[monster] = MonsterAI(monster, self._archetype)
+                if self._not_undead and self.monsters[monster].archetype == 'Undead':
+                    continue
+                if all_undead and self.monsters[monster].archetype == 'Undead':
+                    self._archetype = 'Undead'
+                    break
+                if all_undead and self.monsters[monster].archetype != 'Undead':
+                    self._not_undead = True
+                break
+        self.boss = None if not boss_monster_name else MonsterAI(boss_monster_name, self._archetype)
+
+    def summary(self, show_boss=True):
+        print('***************************  MONSTERS  ***************************\n')
+        for monster in self.monsters.values():
+            monster.summary()
+        if show_boss and self.boss:
+            print('\n*****************************  BOSS  *****************************\n')
+            self.boss.summary()
+        print('******************************************************************')
+
+    def boss_summary(self):
+        if self.boss:
+            print('\n*****************************  BOSS  *****************************\n')
+            self.boss.summary()
+            print('******************************************************************')
+        else:
+            print('There is no boss for this quest.')
+
+
+class AIQuest:
+    def __init__(self, n_monsters=5, n_encounters=4, boss=True, sorted_battles=True, use_all_minis=False, all_undead=True, archetype=None):
+        self.monster_obj = Monsters(n_monsters, n_encounters, boss, sorted_battles, use_all_minis)
+        self.monsters = self.monster_obj.quest_monsters
+        self.boss = self.monster_obj.quest_boss
+        self.overlord_obj = AIOverlord(self.monsters, self.boss, all_undead, archetype)
+
+    def summary(self):
+        self.encounter_summary()
+        print()
+        self.overlord_obj.summary()
+
+    def monsters_summary(self, show_boss=False):
+        self.overlord_obj.summary(show_boss)
+
+    def boss_summary(self):
+        self.overlord_obj.boss_summary()
+
+    def encounter_summary(self):
+        print('**************************  ENCOUNTERS  **************************\n')
+        for encounter in self.monster_obj.encounters.values():
+            print(encounter)
+
 
