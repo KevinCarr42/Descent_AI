@@ -63,7 +63,7 @@ class Treasures:
 
 class Monsters:
     # constants
-    MIN_ENEMY_PER_ENCOUNTER = 3
+    MIN_ENEMY_PER_ENCOUNTER = 3  # TODO: revise to use min power per encounter? (1 dragon could be solo)
     
     def __init__(self, n_monsters=5, n_encounters=4, boss=True, sorted_battles=True, use_all_minis=False):
         self._MINIONS = sorted(list({x.replace('Master', '').strip() for x in MONSTER_DF[MONSTER_DF.minion].name}))
@@ -109,47 +109,24 @@ class Monsters:
     def choose_boss(self, boss):
         if boss:
             self.quest_boss = np.random.choice(self._BOSSES)
-            
-    def choose_minis(self, use_all_minis, n_encounters):
-        # TODO: fix bug where n is too high for number of minis (maybe start small, add monsters as required)
-        for monster in self.quest_monsters:
-            n_normal, n_master = self._DATA.loc[self._DATA.name.str.contains(monster) & ~self._DATA.name.str.contains('Boss'), 'quantity']
-            for _ in range(n_normal):
-                self.minis.append(monster)
-            for _ in range(n_master):
-                self.minis.append(monster + ' Master')
-        if not use_all_minis:
-            n_iterations = 3  # more iterations favours larger number of utilised minis
-            n_enemies = np.random.randint(n_encounters * self.MIN_ENEMY_PER_ENCOUNTER+1, len(self.minis)+1, n_iterations).max()
-            self.minis = sorted(np.random.choice(self.minis, n_enemies))
-        if self.quest_boss:
-            if self.quest_boss + ' Master' in self.quest_monsters:
-                self.minis.remove(self.quest_boss + ' Master')
-            self.minis.append(self.quest_boss + ' Boss')
-            
-    def summarise(self):
-        print('\nQuest Monsters\n================')
-        for monster in self.quest_monsters:
-            print(monster)
-        print()
-        
-        if self.quest_boss:
-            print('\nQuest Boss\n================')
-            print(self.quest_boss)
-            print()
+
+    def set_boss_power(self):
+        """set boss power to magic number"""
+        self._DATA.loc[self._DATA.name.str.contains('boss', case=False), 'power'] = 20
             
     def get_power(self, name_of_monster):
-        if 'boss' in name_of_monster.lower():
-            return 20  # arbitrary magic number for boss power for sorting
         return self._DATA.loc[self._DATA.name == name_of_monster, 'power'].iloc[0]
     
     def calc_total_power(self, list_of_monsters):
+        self.set_boss_power()
         total_power = 0
         for monster in list_of_monsters:
             total_power += self.get_power(monster)
         return total_power
             
     def generate_encounters(self, n_encounters, sorted_battles):
+        # TODO: revise this based on MIN_POWER_PER_ENCOUNTER
+
         # confirm min enemies per encounter is possible
         if len(self.minis[:-1]) < self.MIN_ENEMY_PER_ENCOUNTER*n_encounters:
             raise NotEnoughEnemiesToHaveSoManyEncountersError
@@ -184,6 +161,41 @@ class Monsters:
             encounter_dict = sorted_dict
 
         return encounter_dict
+            
+    def choose_minis(self, use_all_minis, n_encounters):
+        # TODO: fix bug where n is too high for number of minis (maybe start small, add monsters as required)
+        # TODO: revise this method entirely based on self.encounters
+        #  why did I do this instead of just looping through the encounter dict?
+        for monster in self.quest_monsters:
+            n_normal, n_master = self._DATA.loc[self._DATA.name.str.contains(monster) & ~self._DATA.name.str.contains('Boss'), 'quantity']
+            for _ in range(n_normal):
+                self.minis.append(monster)
+            for _ in range(n_master):
+                self.minis.append(monster + ' Master')
+        if not use_all_minis:
+            # TODO: isn't this accomplished in the while not enough enemies loop above?
+            n_iterations = 3  # more iterations favours larger number of utilised minis
+            n_enemies = np.random.randint(n_encounters * self.MIN_ENEMY_PER_ENCOUNTER+1, len(self.minis)+1, n_iterations).max()
+            self.minis = sorted(np.random.choice(self.minis, n_enemies))
+        if self.quest_boss:
+            if self.quest_boss + ' Master' in self.quest_monsters:
+                self.minis.remove(self.quest_boss + ' Master')
+            self.minis.append(self.quest_boss + ' Boss')
+            
+    def summarise(self):
+        print('\nQuest Monsters\n================')
+        for monster in self.quest_monsters:
+            print(monster)
+        print()
+        
+        if self.quest_boss:
+            print('\nQuest Boss\n================')
+            print(self.quest_boss)
+            print()
+
+    def show_encounters(self):
+        for i, encounter in self.encounters.items():
+            print(f'Encounter {i}:\n{", ".join(encounter)}\n')
 
 
 class Tiles:
