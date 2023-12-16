@@ -10,7 +10,7 @@ from matplotlib.colors import ListedColormap, BoundaryNorm
 MONSTER_DF = pd.read_csv('monster_import.csv').fillna(False)
 MONSTER_DF['rank'] = pd.Categorical(MONSTER_DF['rank'] , categories=['minion', 'master', 'boss'], ordered=True)
 MAP_TILE_DF = pd.read_csv('tile_import.csv')
-OBSTACLE_DF = pd.read_csv('obstacle_import.csv')
+TERRAIN_DF = pd.read_csv('obstacle_import.csv')
 COLOUR_DF = pd.read_csv('colour_import.csv')
 ARCHETYPES = pd.read_csv('archetype_import.csv')
 
@@ -283,6 +283,7 @@ class DescentScenario:
         self.treasures_obj = Treasures(n_encounters, n_treasure_per_encounter, always_chest)
         self.map_tiles_obj = Tiles(MAP_TILE_DF, True)
         self.monster_tiles_obj = Tiles(self.monsters_obj)
+        self.terrain_tiles_obj = Tiles(TERRAIN_DF)
         
         # initialise variables
         self.unrevealed_areas = unrevealed_areas
@@ -302,24 +303,31 @@ class DescentScenario:
         }
         
         # layers for plotting
-        self.grid_map = self.MAP_TEMPLATE.copy()  # null, 1, or 0.5/spawn 
-        self.area_map = self.MAP_TEMPLATE.copy()  # 1, 2, 3, n+1 for Boss
-        self.terrain_map = self.MAP_TEMPLATE.copy()  # inpass, hole, dungeon entrance, etc
+        self.grid_map = self.MAP_TEMPLATE.copy()
+        self.area_map = self.MAP_TEMPLATE.copy()
+        self.terrain_map = self.MAP_TEMPLATE.copy()
         self.monster_map = self.MAP_TEMPLATE.copy()
         self.treasure_map = self.MAP_TEMPLATE.copy()
+        self.label_map = self.MAP_TEMPLATE.copy()
         
         # set up map
         self.create_dungeon_entrance()
+        self.create_terrain()
+        # self.create_map()
+
+        # # distribute stuff
+        # self.distribute_monsters()
+        # self.distribute_terrain()
+        # self.distribute_treasures()
     
-    def add_tile_to_encounter_list(self, name_of_tile):
-        self.encounters['map_tiles'][self.current_area].append(name_of_tile)
+    def add_tile_to_encounter_list(self, name_of_tile, encounter_str):
+        self.encounters[encounter_str][self.current_area].append(name_of_tile)
     
-    def place_tile(self, name_of_tile, x, y, obj):
-        tile = obj.unused_tiles[name_of_tile]
-        obj.use_tile(name_of_tile)
+    def place_tile(self, name_of_tile, x, y, tiles_obj, map_obj):
+        tile = tiles_obj.unused_tiles[name_of_tile]
+        tiles_obj.use_tile(name_of_tile)
         w, h = tile.shape
-        self.grid_map.iloc[y:y+w, x:x+h] = tile
-        self.add_tile_to_encounter_list(name_of_tile)
+        map_obj.iloc[y:y+w, x:x+h] = tile
     
     def add_map_tile_to_current_area(self, name_of_tile):
         self.area_dict[self.current_area].append(name_of_tile)
@@ -329,26 +337,23 @@ class DescentScenario:
         self.area_map[mask] = self.current_area
     
     def place_map_tile(self, name_of_tile, x, y):
-        obj = self.map_tiles_obj
+        tile_obj = self.map_tiles_obj
         self.add_map_tile_to_current_area(name_of_tile)
-        self.place_tile(name_of_tile, x, y, obj)
+        self.add_tile_to_encounter_list(name_of_tile, 'map_tiles')
+        self.place_tile(name_of_tile, x, y, tile_obj, self.grid_map)
         self._fill_area_map()
             
     def place_monster_tile(self, name_of_tile, x, y):
-        obj = self.monsters_obj
-        self.place_tile(name_of_tile, x, y, obj)
+        tile_obj = self.monster_tiles_obj
+        self.place_tile(name_of_tile, x, y, tile_obj, self.monster_map)
     
-    def place_terrain(self, name_of_item, x, y):
-        TERRAIN_INDEX_START = 30  # TODO: look up from known indices for mapping / plotting
-        if name_of_item not in self.terrain_dict.values():
-            self.terrain_dict[TERRAIN_INDEX_START+len(self.terrain_dict)] = name_of_item
-        self.terrain_map.iloc[y, x] = {v:k for k,v in self.terrain_dict.items()}[name_of_item]
+    def place_terrain_tile(self, name_of_tile, x, y):
+        tile_obj = self.terrain_tiles_obj
+        self.place_tile(name_of_tile, x, y, tile_obj, self.terrain_map)
     
     def place_treasure(self, name_of_item, x, y):
-        TREASURE_INDEX_START = 40  # TODO: look up from known indices for mapping / plotting
-        if name_of_item not in self.treasure_dict.values():
-            self.treasure_dict[TREASURE_INDEX_START+len(self.terrain_dict)] = name_of_item
-        self.treasure_map.iloc[y, x] = {v:k for k,v in self.treasure_dict.items()}[name_of_item]
+        n_mapping = COLOUR_DF.loc[COLOUR_DF.object==name_of_item.split('_')[0].upper(), 'id'].iloc[0]
+        self.treasure_map.iloc[y, x] = n_mapping
     
     def create_dungeon_entrance(self):
         """hardcoded spawn location / configuration - consider revising"""
@@ -357,8 +362,8 @@ class DescentScenario:
         self.place_map_tile('Cap_1', START_X, START_Y)
         self.place_map_tile('H2_1', START_X, START_Y-2)
         self.grid_map.iloc[START_Y-1:START_Y+1, START_X:START_X+2] = 1
-        self.place_terrain('dungeon_entrance', START_X, START_Y)
-        self.place_terrain('dungeon_entrance', START_X+1, START_Y)
+        self.place_terrain_tile('dungeon_entrance_1', START_X, START_Y)
+        self.place_terrain_tile('dungeon_entrance_2', START_X+1, START_Y)
     
     @property
     def spawn_points(self):
@@ -384,7 +389,7 @@ class DescentScenario:
     @property
     def combined_map(self):
         combined_map = self.grid_map.copy()
-        for layer in [self.terrain_map, self.monster_map, self.treasure_map]:
+        for layer in [self.terrain_map, self.treasure_map, self.monster_map]:
             combined_map = layer.combine_first(combined_map)
         if self.CROP_MAP:
             combined_map = combined_map.loc[combined_map.notnull().any(axis=1), combined_map.notnull().any(axis=0)]
@@ -556,7 +561,14 @@ class DescentScenario:
         return self.confirm_two_adjacent_values(series)
 
     def rotate_tile(self, name_of_tile):
-        self.map_tiles_obj.rotate_tile(name_of_tile)
+        if name_of_tile in self.map_tiles_obj.unused_tiles.keys():
+            self.map_tiles_obj.rotate_tile(name_of_tile)
+        elif name_of_tile in self.monster_tiles_obj.unused_tiles.keys():
+            self.monster_tiles_obj.rotate_tile(name_of_tile)
+        elif name_of_tile in self.terrain_tiles_obj.unused_tiles.keys():
+            self.terrain_tiles_obj.rotate_tile(name_of_tile)
+        else:
+            raise ThatTileIsntInUnusedListForAnyOfTheMaps
 
     def tile_spawn_offset(self, name_of_tile, x, y):
         x1, y1 = x, y
@@ -814,26 +826,71 @@ class DescentScenario:
                     display(self.show_areas)
                     return
 
-    def choose_a_terrain_object(self):
-        terrain_choices = ['obstacle', 'pit', 'trap', 'water']  # TODO: update to choose from tiles instead
-        return np.random.choice(terrain_choices)
+    def choose_a_terrain_tile_object(self):
+        return np.random.choice(list(self.terrain_tiles_obj.unused_tiles.keys()))
 
     def create_terrain(self):
         max_obstacles = 10
         for i in range(self.N_ENCOUNTERS):
             how_many_obstacles = np.random.choice(range(max_obstacles))
             for _ in range(how_many_obstacles):
-                self.encounters['terrain'][i+1].append(self.choose_a_terrain_object())
+                self.encounters['terrain'][i+1].append(self.choose_a_terrain_tile_object())
 
-    def distribute_terrain(self):
-        ...
+    def check_placement_legal(self, x, y, tile_df=None):
+        if tile_df is None:
+            return self.combined_map.loc[y, x] == 1
+        h, w = tile_df.shape
+        return (self.combined_map.loc[y:y+h+1, x:x+w+1] == 1).all().all()
+    
+    def get_random_xy_in_area(self, n_area):
+        cropped_area = self.area_map.loc[(self.area_map==n_area).any(axis=1), (self.area_map==n_area).any(axis=0)]
+        x_min, y_min = cropped_area.columns.min(), cropped_area.index.min()
+        x_max, y_max = cropped_area.columns.max(), cropped_area.index.max()
+        return np.random.randint(x_min, x_max+1), np.random.randint(y_min, y_max+1)
 
-    def distribute_monsters(self):
-        ...
+    def distribute_terrain(self, n_trials=100):
+        for n_area in range(1, self.N_ENCOUNTERS+1):
+            for _ in range(n_trials):
+                if len(self.encounters['terrain'][n_area]) < 1:
+                    break
+                x, y = self.get_random_xy_in_area(n_area)
+                tile_name = np.random.choice(self.encounters['terrain'][n_area])
+                tile = self.terrain_tiles_obj.unused_tiles[tile_name]
+                if self.check_placement_legal(x, y, tile):
+                    self.place_terrain_tile(tile_name, x, y)
+                else:
+                    self.rotate_tile(tile_name)
+                    if self.check_placement_legal(x, y, tile):
+                        self.place_terrain_tile(tile_name, x, y)
 
-    def distribute_treasures(self):
-        ...
-      
+    def distribute_monsters(self, n_trials=100):
+        for n_area in range(1, self.N_ENCOUNTERS+1):
+            list_of_monsters_to_place = 'DEBUG THIS STUFF' # TODO: get this and the lines below related to it, also other methods
+            for _ in range(n_trials):
+                if len(self.encounters['monsters'][n_area]) < 1:
+                    break
+                x, y = self.get_random_xy_in_area(n_area)
+                tile_name = np.random.choice(self.encounters['monsters'][n_area])  # these don't have id numbers, need next line for monsters only
+                tile_name = [x for x in self.monster_tiles_obj.unused_tiles.keys() if x[:-2] == tile_name][0] # TODO: use this idea as template for above 
+
+                tile = self.monster_tiles_obj.unused_tiles[tile_name]
+                if self.check_placement_legal(x, y, tile):
+                    self.place_monster_tile(tile_name, x, y)
+                else:
+                    self.rotate_tile(tile_name)
+                    if self.check_placement_legal(x, y, tile):
+                        self.place_monster_tile(tile_name, x, y)
+
+    def distribute_treasures(self, n_trials=100):
+        for n_area in range(1, self.N_ENCOUNTERS+1):
+            for _ in range(n_trials):
+                if len(self.encounters['treasures'][n_area]) < 1:
+                    break
+                x, y = self.get_random_xy_in_area(n_area)
+                treasure_name = np.random.choice(self.encounters['treasures'][n_area])
+                if self.check_placement_legal(x, y, None):
+                    self.place_treasure(treasure_name, x, y)
+
     # plotting and display function
         
     def summarise_scenario(self):
@@ -875,6 +932,7 @@ class DescentScenario:
         plt.yticks([i+0.5 for i in range(x)], [i+1 for i in range(x)])
         
         # label monsters
+        # TODO: just use self.label_map
         for i in range(x):
             for j in range(y):
                 if self.grid[i, j] == MONSTER or self.grid[i, j] == MASTER:
@@ -894,10 +952,10 @@ class DescentScenario:
     def regenerate_encounters(self):
         pass
     
-    def regenerate_obstacles(self):
+    def regenerate_terrain(self):
         pass
     
-    def add_more_obstacles(self):
+    def add_more_terrain(self):
         pass
     
     def regenerate_treasure(self):
