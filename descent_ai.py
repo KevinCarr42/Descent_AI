@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.colors import ListedColormap, BoundaryNorm
+from IPython.display import display, clear_output
 
 # imported data
 MONSTER_DF = pd.read_csv('monster_import.csv').fillna(False)
@@ -398,12 +399,17 @@ class DescentScenario:
             combined_map[mask] = np.nan
         return combined_map
 
-    @property
-    def show_areas(self):
+    def show_areas(self, crop=True):
         area_map = self.area_map.copy()
-        if self.CROP_MAP:
+        if crop:
             area_map = area_map.loc[area_map.notnull().any(axis=1), area_map.notnull().any(axis=0)]
         return area_map.fillna('')
+    
+    def show_monsters(self, crop=False):
+        monster_map = self.monster_map.copy()
+        if crop:
+            monster_map = monster_map.loc[monster_map.notnull().any(axis=1), monster_map.notnull().any(axis=0)]
+        return monster_map.fillna('')
 
     @property
     def tiles_remaining(self):
@@ -785,6 +791,9 @@ class DescentScenario:
 
     def _create_map_loop(self, show=False):
         for _ in range(self.N_ENCOUNTERS):
+            clear_output(wait=True)
+            display(self.show_areas(False))
+
             while self.current_area_size < self._current_area_size:
                 if (self.tiles_remaining == 0 
                     or self.spawn_points_remaining == 0
@@ -823,7 +832,8 @@ class DescentScenario:
                 if self.current_area_size >= self.MIN_AREA_SIZE:
                     if self.DEBUGGING:
                         print('MAP COMPLETED!')
-                    display(self.show_areas)
+                    clear_output(wait=True)
+                    display(self.show_areas())
                     return
 
     def choose_a_terrain_tile_object(self):
@@ -864,22 +874,40 @@ class DescentScenario:
                         self.place_terrain_tile(tile_name, x, y)
 
     def distribute_monsters(self, n_trials=100):
+        DEBUG, show = True, True
+        unused_tiles = list(self.monster_tiles_obj.unused_tiles.keys())
+        print(unused_tiles)
         for n_area in range(1, self.N_ENCOUNTERS+1):
-            list_of_monsters_to_place = 'DEBUG THIS STUFF' # TODO: get this and the lines below related to it, also other methods
-            for _ in range(n_trials):
-                if len(self.encounters['monsters'][n_area]) < 1:
-                    break
-                x, y = self.get_random_xy_in_area(n_area)
-                tile_name = np.random.choice(self.encounters['monsters'][n_area])  # these don't have id numbers, need next line for monsters only
-                tile_name = [x for x in self.monster_tiles_obj.unused_tiles.keys() if x[:-2] == tile_name][0] # TODO: use this idea as template for above 
-
-                tile = self.monster_tiles_obj.unused_tiles[tile_name]
-                if self.check_placement_legal(x, y, tile):
-                    self.place_monster_tile(tile_name, x, y)
-                else:
-                    self.rotate_tile(tile_name)
+            # get a list of monster tiles to place
+            m_area = self.encounters['monsters'][n_area].copy()
+            for i, monster in enumerate(m_area):
+                for j, tile in enumerate(unused_tiles):
+                    if monster == ' '.join(tile.split(' ')[:-1]):
+                        m_area[i] = unused_tiles.pop(j)
+                        break
+            if DEBUG:
+                print('\narea:', n_area)
+                print(m_area)
+                print(unused_tiles)
+            for tile_name in m_area:  # loop through each monster in the encounter
+                # attempt to place the monster n_trials number of times
+                for _ in range(n_trials):
+                    x, y = self.get_random_xy_in_area(n_area)
+                    tile = self.monster_tiles_obj.unused_tiles[tile_name]
                     if self.check_placement_legal(x, y, tile):
                         self.place_monster_tile(tile_name, x, y)
+                        if show:
+                            clear_output(wait=True)
+                            display(self.show_monsters())
+                        break
+                    else:
+                        self.rotate_tile(tile_name)
+                        if self.check_placement_legal(x, y, tile):
+                            self.place_monster_tile(tile_name, x, y)
+                            if show:
+                                clear_output(wait=True)
+                                display(self.show_monsters())
+                            break
 
     def distribute_treasures(self, n_trials=100):
         for n_area in range(1, self.N_ENCOUNTERS+1):
