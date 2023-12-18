@@ -310,7 +310,7 @@ class DescentScenario:
         self.monster_map = self.MAP_TEMPLATE.copy()
         self.treasure_map = self.MAP_TEMPLATE.copy()
         self.label_map = self.MAP_TEMPLATE.copy()
-        self.label_dict = dict()
+        self.label_dict = dict()  # TODO: populate this to display with plotting functions
         
         # set up the dungeon
         self.create_dungeon_entrance()
@@ -851,12 +851,6 @@ class DescentScenario:
         h, w = tile_df.shape
         return self.combined_map.loc[y:y+h-1, x:x+w-1].eq(1).sum().sum() == tile_df.size
     
-    # def get_random_xy_in_area(self, n_area):
-    #     cropped_area = self.area_map.loc[(self.area_map==n_area).any(axis=1), (self.area_map==n_area).any(axis=0)]
-    #     x_min, y_min = cropped_area.columns.min(), cropped_area.index.min()
-    #     x_max, y_max = cropped_area.columns.max(), cropped_area.index.max()
-    #     return np.random.randint(x_min, x_max+1), np.random.randint(y_min, y_max+1)
-    
     def get_list_of_coords_in_area(self, n_area):
         coords = [(col, idx) for idx, row in self.area_map.iterrows() for col in self.area_map.columns if row[col] == n_area]
         random.shuffle(coords)
@@ -876,15 +870,12 @@ class DescentScenario:
                 rectangular = (self.monster_tiles_obj.unused_tiles[tile_name].shape[0] != self.monster_tiles_obj.unused_tiles[tile_name].shape[1])
                 for x, y in area_spawn_points:
                     if self.check_placement_legal(x, y, self.monster_tiles_obj.unused_tiles[tile_name]):
-                        print(x, y, 'legal: ', tile_name, 'placed')
                         self.place_monster_tile(tile_name, x, y)
                         area_spawn_points.remove((x, y))
                         break
                     if rectangular:
                         self.rotate_tile(tile_name)
-                        print(tile_name, 'rotated')
                         if self.check_placement_legal(x, y, self.monster_tiles_obj.unused_tiles[tile_name]):
-                            print('rotated', x, y, 'legal: ', tile_name, 'placed')
                             self.place_monster_tile(tile_name, x, y)
                             area_spawn_points.remove((x, y))
                             break
