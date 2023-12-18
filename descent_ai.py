@@ -135,7 +135,7 @@ class Monsters:
         if not use_all_minis:
             n_iterations = 5  # MAGIC NUMBER: more iterations favours larger number of utilised minis
             n_enemies = np.random.randint(n_encounters, len(self.minis)+1, n_iterations).max()
-            self.minis = sorted(np.random.choice(self.minis, n_enemies))
+            self.minis = sorted(np.random.choice(self.minis, n_enemies, replace=False))
         if self.quest_boss:
             if self.quest_boss + ' Master' in self.quest_monsters:
                 self.minis.remove(self.quest_boss + ' Master')
@@ -326,9 +326,9 @@ class DescentScenario:
     
     def place_tile(self, name_of_tile, x, y, tiles_obj, map_obj):
         tile = tiles_obj.unused_tiles[name_of_tile]
-        tiles_obj.use_tile(name_of_tile)
         w, h = tile.shape
         map_obj.iloc[y:y+w, x:x+h] = tile
+        tiles_obj.use_tile(name_of_tile)
     
     def add_map_tile_to_current_area(self, name_of_tile):
         self.area_dict[self.current_area].append(name_of_tile)
@@ -830,6 +830,8 @@ class DescentScenario:
             self._create_map_loop()
             if self.current_area == self.N_ENCOUNTERS:
                 if self.current_area_size >= self.MIN_AREA_SIZE:
+                    if self._map_unfinishable:
+                        continue
                     if self.DEBUGGING:
                         print('MAP COMPLETED!')
                     clear_output(wait=True)
@@ -850,13 +852,18 @@ class DescentScenario:
         if tile_df is None:
             return self.combined_map.loc[y, x] == 1
         h, w = tile_df.shape
-        return (self.combined_map.loc[y:y+h+1, x:x+w+1] == 1).all().all()
+        return (self.combined_map.loc[y:y+h-1, x:x+w-1] == 1).all().all()
     
-    def get_random_xy_in_area(self, n_area):
-        cropped_area = self.area_map.loc[(self.area_map==n_area).any(axis=1), (self.area_map==n_area).any(axis=0)]
-        x_min, y_min = cropped_area.columns.min(), cropped_area.index.min()
-        x_max, y_max = cropped_area.columns.max(), cropped_area.index.max()
-        return np.random.randint(x_min, x_max+1), np.random.randint(y_min, y_max+1)
+    # def get_random_xy_in_area(self, n_area):
+    #     cropped_area = self.area_map.loc[(self.area_map==n_area).any(axis=1), (self.area_map==n_area).any(axis=0)]
+    #     x_min, y_min = cropped_area.columns.min(), cropped_area.index.min()
+    #     x_max, y_max = cropped_area.columns.max(), cropped_area.index.max()
+    #     return np.random.randint(x_min, x_max+1), np.random.randint(y_min, y_max+1)
+    
+    def get_list_of_coords_in_area(self, n_area):
+        coords = [(col, idx) for idx, row in self.area_map.iterrows() for col in self.area_map.columns if row[col] == n_area]
+        random.shuffle(coords)
+        return coords
 
     def distribute_terrain(self, n_trials=100):
         for n_area in range(1, self.N_ENCOUNTERS+1):
@@ -873,41 +880,44 @@ class DescentScenario:
                     if self.check_placement_legal(x, y, tile):
                         self.place_terrain_tile(tile_name, x, y)
 
-    def distribute_monsters(self, n_trials=100):
-        DEBUG, show = True, True
+    def distribute_monsters(self):
+        DEBUG = True
         unused_tiles = list(self.monster_tiles_obj.unused_tiles.keys())
         print(unused_tiles)
         for n_area in range(1, self.N_ENCOUNTERS+1):
             # get a list of monster tiles to place
-            m_area = self.encounters['monsters'][n_area].copy()
-            for i, monster in enumerate(m_area):
+            m_area_monsters = self.encounters['monsters'][n_area].copy()
+            for i, monster in enumerate(m_area_monsters):
                 for j, tile in enumerate(unused_tiles):
                     if monster == ' '.join(tile.split(' ')[:-1]):
-                        m_area[i] = unused_tiles.pop(j)
+                        m_area_monsters[i] = unused_tiles.pop(j)
                         break
+            area_spawn_points = self.get_list_of_coords_in_area(n_area)
             if DEBUG:
                 print('\narea:', n_area)
-                print(m_area)
+                print(m_area_monsters)
                 print(unused_tiles)
-            for tile_name in m_area:  # loop through each monster in the encounter
-                # attempt to place the monster n_trials number of times
-                for _ in range(n_trials):
-                    x, y = self.get_random_xy_in_area(n_area)
-                    tile = self.monster_tiles_obj.unused_tiles[tile_name]
+            for tile_name in m_area_monsters:
+                print(tile_name)
+                tile = self.monster_tiles_obj.unused_tiles[tile_name]
+                h, w = tile.shape
+                for x, y in area_spawn_points:
+                    print(x, y, end=' - ')
                     if self.check_placement_legal(x, y, tile):
+                        print('\nplaced')
                         self.place_monster_tile(tile_name, x, y)
-                        if show:
-                            clear_output(wait=True)
-                            display(self.show_monsters())
+                        area_spawn_points.remove((x, y))
                         break
-                    else:
+                    if h != w:
+                        print('rotated', end = ' - ')
                         self.rotate_tile(tile_name)
                         if self.check_placement_legal(x, y, tile):
+                            print('\nplaced')
                             self.place_monster_tile(tile_name, x, y)
-                            if show:
-                                clear_output(wait=True)
-                                display(self.show_monsters())
+                            area_spawn_points.remove((x, y))
                             break
+                else:
+                    print('\nWAS NOT ABLE TO PLACE THIS THING ANYWHERE!!!!!!!!!!!!!!!!!!!!!!!!')
 
     def distribute_treasures(self, n_trials=100):
         for n_area in range(1, self.N_ENCOUNTERS+1):
