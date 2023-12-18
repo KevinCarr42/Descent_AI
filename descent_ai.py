@@ -838,16 +838,15 @@ class DescentScenario:
                     display(self.show_areas())
                     return
 
-    def choose_a_terrain_tile_object(self):
-        return np.random.choice(list(self.terrain_tiles_obj.unused_tiles.keys()))
-
     def create_terrain(self):
-        max_obstacles = 10
-        for i in range(self.N_ENCOUNTERS):
-            how_many_obstacles = np.random.choice(range(max_obstacles))
-            for _ in range(how_many_obstacles):
-                self.encounters['terrain'][i+1].append(self.choose_a_terrain_tile_object())
-
+        glyphs = [x for x in list(self.terrain_tiles_obj.unused_tiles.keys()) if x[:5] == 'glyph']
+        all_terrain = [x for x in list(self.terrain_tiles_obj.unused_tiles.keys()) if x[:5] != 'glyph']
+        for i in range(self.N_ENCOUNTERS):  # add 1 glyph to each encounter
+            self.encounters['terrain'][i+1] += [glyphs.pop(0)]
+        terrain = list(np.random.choice(all_terrain, np.random.randint(len(all_terrain)), replace=False))
+        for obstacle in terrain:
+            self.encounters['terrain'][np.random.randint(self.N_ENCOUNTERS)+1] += [obstacle]
+        
     def check_placement_legal(self, x, y, tile_df=None):
         if tile_df is None:
             return self.combined_map.loc[y, x] == 1
@@ -865,55 +864,52 @@ class DescentScenario:
         random.shuffle(coords)
         return coords
 
-    def distribute_terrain(self, n_trials=100):
-        for n_area in range(1, self.N_ENCOUNTERS+1):
-            for _ in range(n_trials):
-                if len(self.encounters['terrain'][n_area]) < 1:
-                    break
-                x, y = self.get_random_xy_in_area(n_area)
-                tile_name = np.random.choice(self.encounters['terrain'][n_area])
-                tile = self.terrain_tiles_obj.unused_tiles[tile_name]
-                if self.check_placement_legal(x, y, tile):
-                    self.place_terrain_tile(tile_name, x, y)
-                else:
-                    self.rotate_tile(tile_name)
-                    if self.check_placement_legal(x, y, tile):
-                        self.place_terrain_tile(tile_name, x, y)
-
     def distribute_monsters(self):
-        DEBUG = True
         unused_tiles = list(self.monster_tiles_obj.unused_tiles.keys())
-        print(unused_tiles)
         for n_area in range(1, self.N_ENCOUNTERS+1):
-            # get a list of monster tiles to place
-            m_area_monsters = self.encounters['monsters'][n_area].copy()
-            for i, monster in enumerate(m_area_monsters):
+            n_area_monsters = self.encounters['monsters'][n_area].copy()
+            for i, monster in enumerate(n_area_monsters):
                 for j, tile in enumerate(unused_tiles):
                     if monster == ' '.join(tile.split(' ')[:-1]):
-                        m_area_monsters[i] = unused_tiles.pop(j)
+                        n_area_monsters[i] = unused_tiles.pop(j)
                         break
             area_spawn_points = self.get_list_of_coords_in_area(n_area)
-            if DEBUG:
-                print('\narea:', n_area)
-                print(m_area_monsters)
-                print(unused_tiles)
-            for tile_name in m_area_monsters:
-                print(tile_name)
-                tile = self.monster_tiles_obj.unused_tiles[tile_name]
-                h, w = tile.shape
+            for tile_name in n_area_monsters:
+                h, w = self.monster_tiles_obj.unused_tiles[tile_name].shape
+                for x, y in area_spawn_points:
+                    if self.check_placement_legal(x, y, self.monster_tiles_obj.unused_tiles[tile_name]):
+                        self.place_monster_tile(tile_name, x, y)
+                        area_spawn_points.remove((x, y))
+                        break
+                    if h != w:
+                        self.rotate_tile(tile_name)
+                        if self.check_placement_legal(x, y, self.monster_tiles_obj.unused_tiles[tile_name]):
+                            self.place_monster_tile(tile_name, x, y)
+                            area_spawn_points.remove((x, y))
+                            break
+                else:
+                    print('\nWAS NOT ABLE TO PLACE THIS THING ANYWHERE!!!!!!!!!!!!!!!!!!!!!!!!')
+
+    def distribute_terrain(self):
+        for n_area in range(1, self.N_ENCOUNTERS+1):
+            n_area_terrain = self.encounters['terrain'][n_area].copy()
+            area_spawn_points = self.get_list_of_coords_in_area(n_area)
+            for tile_name in n_area_terrain:
+                print(tile_name, end=' - ')
+                h, w = self.terrain_tiles_obj.unused_tiles[tile_name].shape
                 for x, y in area_spawn_points:
                     print(x, y, end=' - ')
-                    if self.check_placement_legal(x, y, tile):
+                    if self.check_placement_legal(x, y, self.terrain_tiles_obj.unused_tiles[tile_name]):
                         print('\nplaced')
-                        self.place_monster_tile(tile_name, x, y)
+                        self.place_terrain_tile(tile_name, x, y)
                         area_spawn_points.remove((x, y))
                         break
                     if h != w:
                         print('rotated', end = ' - ')
                         self.rotate_tile(tile_name)
-                        if self.check_placement_legal(x, y, tile):
+                        if self.check_placement_legal(x, y, self.terrain_tiles_obj.unused_tiles[tile_name]):
                             print('\nplaced')
-                            self.place_monster_tile(tile_name, x, y)
+                            self.place_terrain_tile(tile_name, x, y)
                             area_spawn_points.remove((x, y))
                             break
                 else:
