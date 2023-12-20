@@ -285,6 +285,7 @@ class DescentScenario:
         self.map_tiles_obj = Tiles(MAP_TILE_DF, True)
         self.monster_tiles_obj = Tiles(self.monsters_obj)
         self.terrain_tiles_obj = Tiles(TERRAIN_DF)
+        self.ai_overlord = AIOverlord(self.monsters_obj.quest_monsters, self.monsters_obj.quest_boss)
 
         # tracking all map object attributes
         self.encounters = {
@@ -302,6 +303,7 @@ class DescentScenario:
         self.terrain_dict = dict()
         self.treasure_dict = dict()
         self.area_dict = {n+1:list() for n in range(n_encounters)}
+        self.label_dict = self.ai_overlord.label_dict
         
         # layers for plotting
         self.grid_map = self.MAP_TEMPLATE.copy()
@@ -310,7 +312,6 @@ class DescentScenario:
         self.monster_map = self.MAP_TEMPLATE.copy()
         self.treasure_map = self.MAP_TEMPLATE.copy()
         self.label_map = self.MAP_TEMPLATE.copy()
-        self.label_dict = dict()  # TODO: populate this to display with plotting functions
         
         # set up the dungeon
         self.create_dungeon_entrance()
@@ -337,10 +338,18 @@ class DescentScenario:
         self.add_tile_to_encounter_list(name_of_tile, 'map_tiles')
         self.place_tile(name_of_tile, x, y, tile_obj, self.grid_map)
         self._fill_area_map()
+
+    def cleaned_monster_name(self, full_monster_name, clean_boss=False):
+        if full_monster_name[-1].isdigit():
+            full_monster_name = ' '.join(full_monster_name.split(' ')[:-1])
+        if clean_boss:
+            return full_monster_name.replace('Master', '').replace('Boss', '').strip()
+        return full_monster_name.replace('Master', '').strip()
             
     def place_monster_tile(self, name_of_tile, x, y):
         tile_obj = self.monster_tiles_obj
         self.place_tile(name_of_tile, x, y, tile_obj, self.monster_map)
+        self.label_map.iloc[y, x] = self.label_dict[self.cleaned_monster_name(name_of_tile)]
     
     def place_terrain_tile(self, name_of_tile, x, y):
         tile_obj = self.terrain_tiles_obj
@@ -443,6 +452,12 @@ class DescentScenario:
     @property
     def number_of_big_tiles(self):
         return len([x for x in self.unused_tiles if x[0]=='S' or x[0]=='R'])
+    
+    def ai_summary(self, show_boss=True):
+        self.ai_overlord.summary(show_boss)
+
+    def ai_boss_summary(self):
+        self.ai_overlord.boss_summary()
 
     # procedural map generation
 
@@ -1005,6 +1020,7 @@ class MonsterAI:
             raise ThisIsNotAMonsterYouCanChoose
         self.monster_name = monster_name
         self.boss = boss
+        self.boss_powers = self.boss_stuff()
         self._archetype_data = self.get_archetype_data(archetype)
 
     def get_archetype_data(self, archetype):
@@ -1071,11 +1087,14 @@ class MonsterAI:
         return self._archetype_data['archetype_first'].iloc[0]
 
     def boss_stuff(self):
-        # TODO: add random boss stuff (2x hitpoints, etc)?
-        pass
+        possible_boss_stuff = ['4x HP', '2x HP, +3 Armor', '2x HP, +5 Power Dice for Attacks', '2x HP, Undying 2', '2x HP, +3 Move, Dodge',
+                               '3x HP, Leech', '2x HP, +3 Range, Aim', '3x HP, Always Battle', 'Dodge, Permanent Stealth, Drain, Leech, +3 Armor']
+        return random.choice(possible_boss_stuff)
 
-    def summary(self):
+    def summary(self, label_idx=None):
         print('------------------------------------------------------------------')
+        if label_idx:
+            print(label_idx+':', end=' ')
         if self.archetype == 'Normal':
             print(self.monster_name)
         elif self.archetype_first:
@@ -1086,8 +1105,10 @@ class MonsterAI:
 
         if pd.notnull(self.special):
             print('Special Powers:', self.special.title().replace('Hp', 'HP'))
+        if self.boss:
+            print('Boss Special Powers:', self.boss_powers)
 
-        print('Target:', self.target.title())
+        print('Target:', self.target.title().replace('Hp', 'HP'))
 
         attack_type = MONSTER_DF.loc[MONSTER_DF['name']==self.monster_name, 'attack_type'].iloc[0]
         if attack_type == 'melee':
@@ -1136,21 +1157,22 @@ class AIOverlord:
                 if all_undead and self.monsters[monster].archetype != 'Undead':
                     self._not_undead = True
                 break
-        self.boss = None if not boss_monster_name else MonsterAI(boss_monster_name, self._archetype)
+        self.boss = None if not boss_monster_name else MonsterAI(boss_monster_name, self._archetype, boss=True)
+        self.label_dict = {m:chr(i+65) for i,m in enumerate(list(self.monsters.keys()) + [self.boss.monster_name + ' Boss'])}
 
     def summary(self, show_boss=True):
         print('***************************  MONSTERS  ***************************\n')
         for monster in self.monsters.values():
-            monster.summary()
+            monster.summary(self.label_dict[monster.monster_name])
         if show_boss and self.boss:
             print('\n*****************************  BOSS  *****************************\n')
-            self.boss.summary()
+            self.boss.summary(self.label_dict[self.boss.monster_name+' Boss'])
         print('******************************************************************')
 
     def boss_summary(self):
         if self.boss:
             print('\n*****************************  BOSS  *****************************\n')
-            self.boss.summary()
+            self.boss.summary(self.label_dict[self.boss.monster_name+' Boss'])
             print('******************************************************************')
         else:
             print('There is no boss for this quest.')
