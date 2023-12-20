@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.colors import ListedColormap, BoundaryNorm
+from matplotlib.lines import Line2D
 from IPython.display import display, clear_output
 
 # imported data
@@ -300,8 +301,6 @@ class DescentScenario:
         self.current_area = 1
         self._current_area_size = 0
         self.choose_area_size()
-        self.terrain_dict = dict()
-        self.treasure_dict = dict()
         self.area_dict = {n+1:list() for n in range(n_encounters)}
         self.label_dict = self.ai_overlord.label_dict
         
@@ -854,6 +853,16 @@ class DescentScenario:
     def create_terrain(self):
         glyphs = [x for x in list(self.terrain_tiles_obj.unused_tiles.keys()) if x[:5] == 'glyph']
         all_terrain = [x for x in list(self.terrain_tiles_obj.unused_tiles.keys()) if x[:5] != 'glyph']
+
+        # choose a random setting - ie lava or swamp, but not all
+        quest_setting = random.choice(['hot', 'wet', 'dry', 'crazytown'])
+        if quest_setting == 'hot':
+            all_terrain = [x for x in all_terrain if x[:3]!='mud' and x[:5]!='water']
+        if quest_setting == 'wet':
+            all_terrain = [x for x in all_terrain if x[:4]!='lava' and x[:3]!='pit']
+        if quest_setting == 'dry':
+            all_terrain = [x for x in all_terrain if x[:3]!='mud' and x[:4]!='lava' and x[:5]!='water']
+
         for i in range(self.N_ENCOUNTERS):  # add 1 glyph to each encounter
             self.encounters['terrain'][i+1] += [glyphs.pop(0)]
         terrain = list(np.random.choice(all_terrain, np.random.randint(len(all_terrain)), replace=False))
@@ -945,22 +954,26 @@ class DescentScenario:
                     print(f'Encounter {k}: {v}')
             print()
     
-    def show(self):
-        # TODO: update this to work with the new structure and nomenclature
+    def show(self, show_up_to_area_n=None):
+        if show_up_to_area_n:
+            combined_map_to_plot = self.combined_map[self.area_map<=show_up_to_area_n]
+        else:
+            combined_map_to_plot = self.combined_map
 
         SCALE = 0.5
-        x, y = self.combined_map.shape
+        x, y = combined_map_to_plot.shape
+        label_size = 16
         
-        cmap = ListedColormap([x for x in COLOURS.values()])
+        cmap = ListedColormap(COLOUR_DF.colour.to_list())
         norm = BoundaryNorm(
-            list(COLOURS.keys()) + [max(list(COLOURS.keys()))+1], 
+            COLOUR_DF.id.to_list() + [max(COLOUR_DF.id.to_list())+1], 
             cmap.N, 
             clip=True
         )
         
         plt.figure(figsize=(SCALE*y, SCALE*x))
         plt.pcolor(
-            self.combined_map,
+            combined_map_to_plot,
             cmap=cmap,
             norm=norm,
             edgecolors='k',
@@ -975,14 +988,33 @@ class DescentScenario:
         plt.xticks([i+0.5 for i in range(y)], [i+1 for i in range(y)])
         plt.yticks([i+0.5 for i in range(x)], [i+1 for i in range(x)])
         
-        # label monsters
-        # TODO: just use self.label_map
-        for i in range(x):
-            for j in range(y):
-                if self.grid[i, j] == MONSTER or self.grid[i, j] == MASTER:
-                    if monster:= self.monsters[i, j]:
-                        plt.text(j+0.5, i+0.5, monster, ha='center', va='center', color='black', size=label_size)
-        
+        # labels
+        xmin, ymin = min(combined_map_to_plot.columns), min(combined_map_to_plot.index)
+        for y in range(self.label_map.shape[0]):
+            for x in range(self.label_map.shape[1]):
+                label = self.label_map.iloc[y, x]
+                if pd.notna(label):
+                    plt.text(x-xmin+0.5, y-ymin+0.5, label, ha='center', va='center', color='black', size=label_size)
+
+        # Legend
+        labels = [x.title().replace('Master', 'Master Monster') for x in COLOUR_DF.object.to_list() if x != 'JOIN' and x != 'NOTHING']
+        colours = [cmap(COLOUR_DF.id.to_list().index(x)) for x in COLOUR_DF.id.to_list()[1:] if x != 0.5 and x != 99]
+
+        # Create square-shaped handles for the legend
+        square_handles = [Line2D([0], [0], marker='s', color='w', markerfacecolor=color, markersize=23, label=label, linewidth=0) 
+                          for color, label in zip(colours, labels)]
+
+        plt.legend(
+            title='LEGEND',
+            title_fontsize=28,
+            handles=square_handles,
+            handleheight=2,
+            loc='upper left',
+            bbox_to_anchor=(1,1.03),
+            fontsize=16,
+            frameon=False
+        )
+
         plt.show()
     
     # OPTIONAL METHODS: tweaking the scenario
@@ -1124,26 +1156,34 @@ class MonsterAI:
         print('----------------------')
 
         if attack_type == 'melee':
-            if self.at_range:
+            if pd.notnull(self.at_range):
                 print('If at attack range: ', self.at_range)
-            if self.gt_range:
+            if pd.notnull(self.gt_range):
                 print(f'If within {self.movement + attack_range} spaces: ', self.gt_range)
-            if self.gt_move_range:
+            if pd.notnull(self.gt_move_range):
                 print(f'Otherwise: ', self.gt_move_range)
         else:
-            if self.lt_range:
+            if pd.notnull(self.lt_range):
                 print(f'If closer than {self.range-1} spaces: ', self.lt_range)
-            if self.at_range:
+            if pd.notnull(self.at_range):
                 print(f'If {attack_range-1} to {attack_range+1} spaces: ', self.at_range)
-            if self.gt_range:
+            if pd.notnull(self.gt_range):
                 print(f'If within {self.movement + attack_range} spaces: ', self.gt_range)
-            if self.gt_move_range:
+            if pd.notnull(self.gt_move_range):
                 print('Otherwise: ', self.gt_move_range)
         
         print()
 
 
 class AIOverlord:
+
+    # TODO (maybe): could add functionality to the AI summary to only show monsters that have been revealed so far
+    '''
+        for encounter in d.encounters['monsters'].values():
+            monsters = sorted(list({x.replace('Master', '').strip() for x in encounter}))
+            print(monsters)  # <- filter by this list when showing summaries
+    '''
+        
     def __init__(self, monsters_name_list, boss_monster_name=None, all_undead=True, archetype=None):
         self.monsters = dict()
         self._archetype = archetype

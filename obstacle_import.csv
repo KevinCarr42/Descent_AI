@@ -9,4 +9,10 @@ pit_3,PIT,base,1,3,1
 obstacle_1,OBSTACLE,base,5,1,1
 obstacle_2,OBSTACLE,base,2,2,1
 obstacle_3,OBSTACLE,base,1,3,1
-dungeon_entrance,GLYPH,na,6,1,1
+dungeon_entrance,ENTRANCE,na,6,1,1
+lava_1,LAVA,WoD,7,1,1
+lava_2,LAVA,WoD,5,2,1
+lava_3,LAVA,WoD,2,3,1
+mud_1,MUD,WoD,9,1,1
+mud_2,MUD,WoD,5,2,1
+mud_3,MUD,WoD,2,3,1
