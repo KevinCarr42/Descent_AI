@@ -1056,6 +1056,8 @@ class MonsterAI:
         if self._archetype_data['move_modifier'].notnull().iloc[0]:
             if self.boss:
                 movement += eval(self._archetype_data['move_modifier'].iloc[0])[1]
+                if 'move' in self.boss_powers.lower() and '+' in self.boss_powers:
+                    movement += eval(self.boss_powers.lower().split('move')[0].strip().split('+')[-1])
             else:
                 movement += eval(self._archetype_data['move_modifier'].iloc[0])[0]
         return movement
