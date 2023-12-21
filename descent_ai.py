@@ -24,6 +24,10 @@ def get_object_colour_id(name_of_colour):
         colour_id = 99  # anything not in the 
     return colour_id
 
+# create text block
+def append_text(text, new_text, sep='\n'):
+    return text + sep + str(new_text)
+
 
 class Treasures:
     ALL_AVAILABLE_TREASURE_MARKERS = {
@@ -453,10 +457,10 @@ class DescentScenario:
         return len([x for x in self.unused_tiles if x[0]=='S' or x[0]=='R'])
     
     def ai_summary(self, show_boss=True):
-        self.ai_overlord.summary(show_boss)
+        return self.ai_overlord.summary(show_boss)
 
     def ai_boss_summary(self):
-        self.ai_overlord.boss_summary()
+        return self.ai_overlord.boss_summary()
 
     # procedural map generation
 
@@ -803,8 +807,9 @@ class DescentScenario:
 
     def _create_map_loop(self, show=False):
         for _ in range(self.N_ENCOUNTERS):
-            clear_output(wait=True)
-            display(self.show_areas(False))
+            if show:
+                clear_output(wait=True)
+                display(self.show_areas(False))
 
             while self.current_area_size < self._current_area_size:
                 if (self.tiles_remaining == 0 
@@ -834,7 +839,7 @@ class DescentScenario:
                 self.increment_area_number()
                 self.choose_area_size()
 
-    def create_map(self, n_attempts=10):
+    def create_map(self, n_attempts=10, show=False):
         for i in range(n_attempts):
             self.__init__()
             if self.DEBUGGING:
@@ -846,8 +851,9 @@ class DescentScenario:
                         continue
                     if self.DEBUGGING:
                         print('MAP COMPLETED!')
-                    clear_output(wait=True)
-                    display(self.show_areas())
+                    if show:
+                        clear_output(wait=True)
+                        display(self.show_areas())
                     return
 
     def create_terrain(self):
@@ -934,6 +940,7 @@ class DescentScenario:
                         break
 
     def create_quest(self):
+        print('creating map...')
         self.create_map()
         print('distributing monsters...')
         self.distribute_monsters()
@@ -953,7 +960,7 @@ class DescentScenario:
                 for k, v in self.encounters[x].items():
                     print(f'Encounter {k}: {v}')
             print()
-    
+
     def show(self, show_up_to_area_n=None):
         if show_up_to_area_n:
             combined_map_to_plot = self.combined_map[self.area_map<=show_up_to_area_n]
@@ -990,11 +997,11 @@ class DescentScenario:
         
         # labels
         xmin, ymin = min(combined_map_to_plot.columns), min(combined_map_to_plot.index)
-        for y in range(self.label_map.shape[0]):
-            for x in range(self.label_map.shape[1]):
-                label = self.label_map.iloc[y, x]
+        for i in range(self.label_map.shape[0]):
+            for j in range(self.label_map.shape[1]):
+                label = self.label_map.iloc[i, j]
                 if pd.notna(label):
-                    plt.text(x-xmin+0.5, y-ymin+0.5, label, ha='center', va='center', color='black', size=label_size)
+                    plt.text(j-xmin+0.5, i-ymin+0.5, label, ha='center', va='center', color='black', size=label_size)
 
         # Legend
         labels = [x.title().replace('Master', 'Master Monster') for x in COLOUR_DF.object.to_list() if x != 'JOIN' and x != 'NOTHING']
@@ -1009,13 +1016,18 @@ class DescentScenario:
             title_fontsize=28,
             handles=square_handles,
             handleheight=2,
-            loc='upper left',
-            bbox_to_anchor=(1,1.03),
-            fontsize=16,
+            loc='upper right',
+            bbox_to_anchor=(-0.05, 1.03),
+            fontsize=label_size,
             frameon=False
         )
 
+        # ai textblock
+        show_boss = show_up_to_area_n >= self.N_ENCOUNTERS if show_up_to_area_n else True
+        plt.text(y+2, -0.5, self.ai_summary(show_boss), fontsize=14, ha='left', va='top', wrap=True)
+
         plt.show()
+
     
     # OPTIONAL METHODS: tweaking the scenario
     
@@ -1126,53 +1138,55 @@ class MonsterAI:
         return random.choice(possible_boss_stuff)
 
     def summary(self, label_idx=None):
-        print('------------------------------------------------------------------')
-        if label_idx:
-            print(label_idx+':', end=' ')
+        text = '------------------------------------------------------------------'
+        
+        # monster title and modifier text
+        label = label_idx+': ' if label_idx else ''
         if self.archetype == 'Normal':
-            print(self.monster_name)
+            monster = self.monster_name
         elif self.archetype_first:
-            print(f"{self.archetype} {self.monster_name}")
+            monster = f"{self.archetype} {self.monster_name}"
         else:
-            print(f"{self.monster_name} {self.archetype} ")
-        print('------------------------------------------------------------------\n')
+            monster = f"{self.monster_name} {self.archetype}"
+        text = append_text(text, label+monster)
+        text = append_text(text, '------------------------------------------------------------------\n')
 
         if pd.notnull(self.special):
-            print('Special Powers:', self.special.title().replace('Hp', 'HP'))
+            text = append_text(text, f'Special Powers: {self.special}'.title().replace('Hp', 'HP'))
         if self.boss:
-            print('Boss Special Powers:', self.boss_powers)
+            text = append_text(text, f'Boss Special Powers: {self.boss_powers}')
 
-        print('Target:', self.target.title().replace('Hp', 'HP'))
+        text = append_text(text, f'Target: {self.target}'.title().replace('Hp', 'HP'))
 
         attack_type = MONSTER_DF.loc[MONSTER_DF['name']==self.monster_name, 'attack_type'].iloc[0]
         if attack_type == 'melee':
             attack_range = 1 if 'reach' in MONSTER_DF.loc[MONSTER_DF.name==self.monster_name, 'abilities'].iloc[0].lower() else 0
-            print('Attack Range:', attack_range, '\n')
+            text = append_text(text, f'Attack Range: {attack_range}\n')
         else:
             attack_range = self.range
-            print('Attack Range:', attack_range-1, 'to', attack_range+1, '\n')
+            text = append_text(text, f'Attack Range: {attack_range-1} to {attack_range+1} \n')
 
-        print('Combat AI Instructions')
-        print('----------------------')
+        text = append_text(text, 'Combat AI Instructions')
+        text = append_text(text, '----------------------')
 
         if attack_type == 'melee':
             if pd.notnull(self.at_range):
-                print('If at attack range: ', self.at_range)
+                text = append_text(text, f'If at attack range: {self.at_range}')
             if pd.notnull(self.gt_range):
-                print(f'If within {self.movement + attack_range} spaces: ', self.gt_range)
+                text = append_text(text, f'If within {self.movement + attack_range} spaces: {self.gt_range}')
             if pd.notnull(self.gt_move_range):
-                print(f'Otherwise: ', self.gt_move_range)
+                text = append_text(text, f'Otherwise: {self.gt_move_range}')
         else:
             if pd.notnull(self.lt_range):
-                print(f'If closer than {self.range-1} spaces: ', self.lt_range)
+                text = append_text(text, f'If closer than {self.range-1} spaces: {self.lt_range}')
             if pd.notnull(self.at_range):
-                print(f'If {attack_range-1} to {attack_range+1} spaces: ', self.at_range)
+                text = append_text(text, f'If {attack_range-1} to {attack_range+1} spaces: {self.at_range}')
             if pd.notnull(self.gt_range):
-                print(f'If within {self.movement + attack_range} spaces: ', self.gt_range)
+                text = append_text(text, f'If within {self.movement + attack_range} spaces: {self.gt_range}')
             if pd.notnull(self.gt_move_range):
-                print('Otherwise: ', self.gt_move_range)
+                text = append_text(text, f'Otherwise: {self.gt_move_range}')
         
-        print()
+        return text + '\n'
 
 
 class AIOverlord:
@@ -1203,21 +1217,23 @@ class AIOverlord:
         self.label_dict = {m:chr(i+65) for i,m in enumerate(list(self.monsters.keys()) + [self.boss.monster_name + ' Boss'])}
 
     def summary(self, show_boss=True):
-        print('***************************  MONSTERS  ***************************\n')
+        text = '***************************  MONSTERS  ***************************\n'
         for monster in self.monsters.values():
-            monster.summary(self.label_dict[monster.monster_name])
+            text = append_text(text, monster.summary(self.label_dict[monster.monster_name]))
         if show_boss and self.boss:
-            print('\n*****************************  BOSS  *****************************\n')
-            self.boss.summary(self.label_dict[self.boss.monster_name+' Boss'])
-        print('******************************************************************')
+            text = append_text(text, '\n*****************************  BOSS  *****************************\n')
+            text = append_text(text, self.boss.summary(self.label_dict[self.boss.monster_name+' Boss']))
+        append_text(text, '******************************************************************')
+        return text
 
     def boss_summary(self):
+        text = '\n*****************************  BOSS  *****************************\n'
         if self.boss:
-            print('\n*****************************  BOSS  *****************************\n')
-            self.boss.summary(self.label_dict[self.boss.monster_name+' Boss'])
-            print('******************************************************************')
+            text = append_text(text, self.boss.summary(self.label_dict[self.boss.monster_name+' Boss']))
+            text = append_text(text, '******************************************************************')
         else:
-            print('There is no boss for this quest.')
+            text = append_text(text, 'There is no boss for this quest.')
+        return text
 
 
 class AIQuest:
@@ -1228,19 +1244,18 @@ class AIQuest:
         self.overlord_obj = AIOverlord(self.monsters, self.boss, all_undead, archetype)
 
     def summary(self):
-        self.encounter_summary()
-        print()
-        self.overlord_obj.summary()
+        return self.encounter_summary() + '\n\n' + self.overlord_obj.summary()
 
     def monsters_summary(self, show_boss=False):
-        self.overlord_obj.summary(show_boss)
+        return self.overlord_obj.summary(show_boss)
 
     def boss_summary(self):
-        self.overlord_obj.boss_summary()
+        return self.overlord_obj.boss_summary()
 
     def encounter_summary(self):
-        print('**************************  ENCOUNTERS  **************************\n')
+        text = '**************************  ENCOUNTERS  **************************\n'
         for encounter in self.monster_obj.encounters.values():
-            print(encounter)
+            text = append_text(text, encounter)
+        return text
 
 
