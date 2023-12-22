@@ -18,12 +18,12 @@ SAVED_MAPS_FOLDER = 'saved_maps'
 DATA_FOLDER = 'data'
 
 # imported data
-MONSTER_DF = pd.read_csv('monster_import.csv').fillna(False)
+MONSTER_DF = pd.read_csv(os.path.join(DATA_FOLDER, 'monster_import.csv')).fillna(False)
 MONSTER_DF['rank'] = pd.Categorical(MONSTER_DF['rank'] , categories=['minion', 'master', 'boss'], ordered=True)
-MAP_TILE_DF = pd.read_csv('tile_import.csv')
-TERRAIN_DF = pd.read_csv('obstacle_import.csv')
-COLOUR_DF = pd.read_csv('colour_import.csv')
-ARCHETYPES = pd.read_csv('archetype_import.csv')
+MAP_TILE_DF = pd.read_csv(os.path.join(DATA_FOLDER, 'tile_import.csv'))
+TERRAIN_DF = pd.read_csv(os.path.join(DATA_FOLDER, 'obstacle_import.csv'))
+COLOUR_DF = pd.read_csv(os.path.join(DATA_FOLDER, 'colour_import.csv'))
+ARCHETYPES = pd.read_csv(os.path.join(DATA_FOLDER, 'archetype_import.csv'))
 
 # colours
 def get_object_colour_id(name_of_colour):
