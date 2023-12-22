@@ -1,12 +1,21 @@
 # imported modules
 import random
 import pandas as pd
+import os
+import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from datetime import datetime
 from matplotlib.colors import ListedColormap, BoundaryNorm
 from matplotlib.lines import Line2D
 from IPython.display import display, clear_output
+
+# CONSTANTS
+
+# file paths
+SAVED_MAPS_FOLDER = 'saved_maps'
+DATA_FOLDER = 'data'
 
 # imported data
 MONSTER_DF = pd.read_csv('monster_import.csv').fillna(False)
@@ -318,6 +327,19 @@ class DescentScenario:
         
         # set up the dungeon
         self.create_dungeon_entrance()
+
+    def save(self, file_name=None):
+        folder = SAVED_MAPS_FOLDER
+        if not file_name:
+            file_name = f'{datetime.now().strftime("%Y%m%d_%H%M")}.pickle'
+        with open(os.path.join(folder, file_name), 'wb') as f:
+            pickle.dump(self, f)
+        print(f'{os.path.join(folder, file_name)} saved.')
+
+    @classmethod
+    def load(cls, file_path):
+        with open(file_path, 'rb') as f:
+            return pickle.load(f)
     
     def add_tile_to_encounter_list(self, name_of_tile, encounter_str):
         self.encounters[encounter_str][self.current_area].append(name_of_tile)
