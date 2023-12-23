@@ -322,6 +322,7 @@ class DescentScenario:
         self.choose_area_size()
         self.area_dict = {n+1:list() for n in range(n_encounters)}
         self.label_dict = self.ai_overlord.label_dict
+        self._dungeon_terrain_type = None
         
         # layers for plotting
         self.grid_map = self.MAP_TEMPLATE.copy()
@@ -390,13 +391,14 @@ class DescentScenario:
         n_mapping = COLOUR_DF.loc[COLOUR_DF.object==name_of_item.split('_')[0].upper(), 'id'].iloc[0]
         self.treasure_map.iloc[y, x] = n_mapping
     
-    def create_dungeon_entrance(self):
+    def create_dungeon_entrance(self, only_terrain=False):
         """hardcoded spawn location / configuration - consider revising"""
         OFFSET_FROM_BOTTOM = 1
         START_X, START_Y = self.MAX_W // 2, self.MAX_H - OFFSET_FROM_BOTTOM
-        self.place_map_tile('Cap_1', START_X, START_Y)
-        self.place_map_tile('H2_1', START_X, START_Y-2)
-        self.grid_map.iloc[START_Y-1:START_Y+1, START_X:START_X+2] = 1
+        if not only_terrain:
+            self.place_map_tile('Cap_1', START_X, START_Y)
+            self.place_map_tile('H2_1', START_X, START_Y-2)
+            self.grid_map.iloc[START_Y-1:START_Y+1, START_X:START_X+2] = 1
         self.place_terrain_tile('dungeon_entrance_1', START_X, START_Y)
         self.place_terrain_tile('dungeon_entrance_2', START_X+1, START_Y)
         self.place_terrain_tile('dungeon_entrance_3', START_X, START_Y-1)
@@ -887,22 +889,26 @@ class DescentScenario:
                         display(self.show_areas())
                     return
 
-    def create_terrain(self):
+    def create_terrain(self, terrain_type=None, use_all=False):
         glyphs = [x for x in list(self.terrain_tiles_obj.unused_tiles.keys()) if x[:5] == 'glyph']
         all_terrain = [x for x in list(self.terrain_tiles_obj.unused_tiles.keys()) if x[:5] != 'glyph']
 
-        # choose a random setting - ie lava or swamp, but not all
-        quest_setting = random.choice(['hot', 'wet', 'dry', 'crazytown'])
-        if quest_setting == 'hot':
+        terrain_types = ['hot', 'wet', 'dry', 'crazytown']
+        if terrain_type and terrain_type in terrain_types:
+            self._dungeon_terrain_type = terrain_type
+        else:
+            self._dungeon_terrain_type = random.choice(terrain_types)
+
+        if self._dungeon_terrain_type == 'hot':
             all_terrain = [x for x in all_terrain if x[:3]!='mud' and x[:5]!='water']
-        if quest_setting == 'wet':
+        if self._dungeon_terrain_type == 'wet':
             all_terrain = [x for x in all_terrain if x[:4]!='lava' and x[:3]!='pit']
-        if quest_setting == 'dry':
+        if self._dungeon_terrain_type == 'dry':
             all_terrain = [x for x in all_terrain if x[:3]!='mud' and x[:4]!='lava' and x[:5]!='water']
 
         for i in range(self.N_ENCOUNTERS):  # add 1 glyph to each encounter
             self.encounters['terrain'][i+1] += [glyphs.pop(0)]
-        terrain = list(np.random.choice(all_terrain, np.random.randint(len(all_terrain)), replace=False))
+        terrain = all_terrain if use_all else list(np.random.choice(all_terrain, np.random.randint(len(all_terrain)), replace=False))
         for obstacle in terrain:
             self.encounters['terrain'][np.random.randint(self.N_ENCOUNTERS)+1] += [obstacle]
         
@@ -1109,11 +1115,13 @@ class DescentScenario:
         print('distributing monsters...')
         self.distribute_monsters()
     
-    def regenerate_terrain(self, same_terrain=False):
+    def regenerate_terrain(self, same_terrain=False, terrain_type=None, use_all=False):
         self.terrain_map = self.MAP_TEMPLATE.copy()
         if not same_terrain:
+            self.terrain_tiles_obj = Tiles(TERRAIN_DF)
+            self.create_dungeon_entrance(only_terrain=True)
             self.encounters['terrain'] = {k+1:list() for k in range(self.N_ENCOUNTERS)}
-            self.create_terrain()
+            self.create_terrain(terrain_type, use_all)
         print('distributing terrain...')
         self.distribute_terrain()
         
