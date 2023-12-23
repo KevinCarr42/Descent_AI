@@ -292,10 +292,17 @@ class DescentScenario:
         self.N_ENCOUNTERS = n_encounters
         self.MIN_AREA_SIZE = min_area_size
         self.MAX_AREA_SIZE = max_area_size
+        self._n_monsters = n_monsters
+        self._n_treasure_per_encounter = n_treasure_per_encounter
+        self._boss = boss
+        self._sorted_battles = sorted_battles
+        self._use_all_minis = use_all_minis
+        self._n_treasure_per_encounter = n_treasure_per_encounter
+        self._always_chest = always_chest
 
         # create objects
-        self.monsters_obj = Monsters(n_monsters, n_encounters, boss, sorted_battles, use_all_minis)
-        self.treasures_obj = Treasures(n_encounters, n_treasure_per_encounter, always_chest)
+        self.monsters_obj = Monsters(self._n_monsters, self.N_ENCOUNTERS, self._boss, self._sorted_battles, self._use_all_minis)
+        self.treasures_obj = Treasures(self.N_ENCOUNTERS, self._n_treasure_per_encounter, self._always_chest)
         self.map_tiles_obj = Tiles(MAP_TILE_DF, True)
         self.monster_tiles_obj = Tiles(self.monsters_obj)
         self.terrain_tiles_obj = Tiles(TERRAIN_DF)
@@ -310,8 +317,7 @@ class DescentScenario:
         }
         
         # initialise variables
-        self.unrevealed_areas = unrevealed_areas
-        self.current_area = 1
+        self._current_area = 1  # TODO: this is now just used to generate different areas, should be underscored
         self._current_area_size = 0
         self.choose_area_size()
         self.area_dict = {n+1:list() for n in range(n_encounters)}
@@ -342,7 +348,7 @@ class DescentScenario:
             return pickle.load(f)
     
     def add_tile_to_encounter_list(self, name_of_tile, encounter_str):
-        self.encounters[encounter_str][self.current_area].append(name_of_tile)
+        self.encounters[encounter_str][self._current_area].append(name_of_tile)
     
     def place_tile(self, name_of_tile, x, y, tiles_obj, map_obj):
         tile = tiles_obj.unused_tiles[name_of_tile]
@@ -351,11 +357,11 @@ class DescentScenario:
         tiles_obj.use_tile(name_of_tile)
     
     def add_map_tile_to_current_area(self, name_of_tile):
-        self.area_dict[self.current_area].append(name_of_tile)
+        self.area_dict[self._current_area].append(name_of_tile)
 
     def _fill_area_map(self):
         mask = self.grid_map.notnull() & self.area_map.isnull()
-        self.area_map[mask] = self.current_area
+        self.area_map[mask] = self._current_area
     
     def place_map_tile(self, name_of_tile, x, y):
         tile_obj = self.map_tiles_obj
@@ -409,7 +415,7 @@ class DescentScenario:
 
     @property
     def current_area_size(self):
-        return (self.area_map == self.current_area).sum().sum()
+        return (self.area_map == self._current_area).sum().sum()
     
     @property
     def tiles(self):
@@ -426,9 +432,6 @@ class DescentScenario:
             combined_map = layer.combine_first(combined_map)
         if self.CROP_MAP:
             combined_map = combined_map.loc[combined_map.notnull().any(axis=1), combined_map.notnull().any(axis=0)]
-        if self.unrevealed_areas:
-            mask = self.area_map > self.current_area
-            combined_map[mask] = np.nan
         return combined_map
 
     def show_areas(self, crop=True):
@@ -483,6 +486,12 @@ class DescentScenario:
 
     def ai_boss_summary(self):
         return self.ai_overlord.boss_summary()
+    
+    def print_ai_summary(self):
+        print(self.ai_summary())
+    
+    def print_ai_boss_summary(self):
+        print(self.ai_boss_summary())
 
     # procedural map generation
 
@@ -494,7 +503,7 @@ class DescentScenario:
         
         # more halls at start of area and when there are less squares rectangles
         n_attempts_without_hallways = len([x for x in self.unused_tiles if x[0]=='S' or x[0]=='R']) * self.current_area_size // self.MAX_AREA_SIZE
-        if self.current_area == self.N_ENCOUNTERS:
+        if self._current_area == self.N_ENCOUNTERS:
             n_attempts_without_hallways *= 5  # less halls in boss room
         name_of_tile = np.random.choice([x for x in self.unused_tiles if x[:3] != 'Cap'])
         for _ in range(n_attempts_without_hallways):
@@ -816,12 +825,12 @@ class DescentScenario:
         self._current_area_size = np.random.randint(self.MIN_AREA_SIZE, self.MAX_AREA_SIZE)
         
     def increment_area_number(self):
-        self.current_area += 1
+        self._current_area += 1
         
     def set_revealed_area(self, n):
         """just in case of accidental reveal, panic undo button"""
         if isinstance(n, int):
-            self.current_area = n
+            self._current_area = n
 
     @property
     def _map_unfinishable(self):
@@ -855,9 +864,9 @@ class DescentScenario:
             self.cap_lowest_spawn_points()
 
             # choose connection to next area
-            n = 1 if self.current_area < self.N_ENCOUNTERS else 0
+            n = 1 if self._current_area < self.N_ENCOUNTERS else 0
             self.cap_all_except_n(n)
-            if self.current_area < self.N_ENCOUNTERS:
+            if self._current_area < self.N_ENCOUNTERS:
                 self.increment_area_number()
                 self.choose_area_size()
 
@@ -867,7 +876,7 @@ class DescentScenario:
             if self.DEBUGGING:
                 print(f'\nMAP CREATION ATTEMPT # {i+1}')
             self._create_map_loop()
-            if self.current_area == self.N_ENCOUNTERS:
+            if self._current_area == self.N_ENCOUNTERS:
                 if self.current_area_size >= self.MIN_AREA_SIZE:
                     if self._map_unfinishable:
                         continue
@@ -983,7 +992,7 @@ class DescentScenario:
                     print(f'Encounter {k}: {v}')
             print()
 
-    def show(self, show_up_to_area_n=None):
+    def show(self, show_up_to_area_n=None, show_boss=None):
         if show_up_to_area_n:
             combined_map_to_plot = self.combined_map[self.area_map<=show_up_to_area_n]
         else:
@@ -1045,37 +1054,76 @@ class DescentScenario:
         )
 
         # ai textblock
-        show_boss = show_up_to_area_n >= self.N_ENCOUNTERS if show_up_to_area_n else True
+        if show_boss is None:
+            show_boss = show_up_to_area_n >= self.N_ENCOUNTERS if show_up_to_area_n else True
         plt.text(y+2, -0.5, self.ai_summary(show_boss), fontsize=14, ha='left', va='top', wrap=True)
 
         plt.show()
 
+    # tweaking the scenario
     
-    # OPTIONAL METHODS: tweaking the scenario
-    
-    def regenerate_map(self):
-        pass
-    
-    def choose_new_monsters(self):
-        pass
-    
-    def regenerate_encounters(self):
-        pass
-    
-    def regenerate_terrain(self):
-        pass
-    
-    def add_more_terrain(self):
-        pass
-    
-    def regenerate_treasure(self):
-        pass
-    
-    def add_more_treasure(self):
-        pass
+    def regenerate_map(self, keep_monsters=True, keep_treasures=True):
+        # map gen repeatedly calls __init__ so we need to back up monsters, terrain, treasure
+        if keep_monsters:
+            monsters_obj = self.monsters_obj
+            ai_overlord = self.ai_overlord
+            monster_encounters = self.encounters['monsters']
+        if keep_treasures:
+            treasures_obj = self.treasures_obj
+            treasure_encounters = self.encounters['treasures']
+        
+        print('creating map...')
+        self.create_map()  # this initialises all layers and attributes
 
-    def remove_some_treasure(self):
-        pass
+        if keep_monsters:
+            self.monsters_obj = monsters_obj
+            self.encounters['monsters'] = monster_encounters
+            self.ai_overlord = ai_overlord
+            self.monster_tiles_obj = Tiles(self.monsters_obj)
+        if keep_treasures:
+            self.treasures_obj = treasures_obj
+            self.encounters['treasures'] = treasure_encounters
+        
+        self.label_dict = self.ai_overlord.label_dict
+        print('distributing monsters...')
+        self.distribute_monsters()
+        print('distributing terrain...')
+        self.create_terrain()
+        self.distribute_terrain()
+        print('distributing treasures...')
+        self.distribute_treasures()
+        print('complete!')
+        
+    def regenerate_monsters(self, keep_monsters=False, keep_archetypes=False):
+        if not keep_monsters:
+            self.monsters_obj = Monsters(self._n_monsters, self.N_ENCOUNTERS, self._boss, self._sorted_battles, self._use_all_minis)
+            self.encounters['monsters'] = {i+1:x for i, x in enumerate(self.monsters_obj.encounters.values())}
+            self.label_dict = self.ai_overlord.label_dict
+
+        if not keep_archetypes or not keep_monsters:  # can't keep AI if new monsters are chosen (with current funcionality)
+            self.ai_overlord = AIOverlord(self.monsters_obj.quest_monsters, self.monsters_obj.quest_boss)
+            
+        self.label_map = self.MAP_TEMPLATE.copy()
+        self.monster_map = self.MAP_TEMPLATE.copy()
+        self.monster_tiles_obj = Tiles(self.monsters_obj)
+        print('distributing monsters...')
+        self.distribute_monsters()
+    
+    def regenerate_terrain(self, same_terrain=False):
+        self.terrain_map = self.MAP_TEMPLATE.copy()
+        if not same_terrain:
+            self.encounters['terrain'] = {k+1:list() for k in range(self.N_ENCOUNTERS)}
+            self.create_terrain()
+        print('distributing terrain...')
+        self.distribute_terrain()
+        
+    def regenerate_treasure(self, keep_treasure=False):
+        self.treasure_map = self.MAP_TEMPLATE.copy()
+        if not keep_treasure:
+            self.encounters['treasures'] = {i+1:x for i, x in enumerate(self.treasures_obj.encounters.values())}
+            self.treasures_obj = Treasures(self.N_ENCOUNTERS, self._n_treasure_per_encounter, self._always_chest)
+        print('distributing treasures...')        
+        self.distribute_treasures()
 
 
 class MonsterAI:
@@ -1222,7 +1270,7 @@ class AIOverlord:
         
     def __init__(self, monsters_name_list, boss_monster_name=None, all_undead=True, archetype=None):
         self.monsters = dict()
-        self._archetype = archetype
+        self._archetype = archetype  # TODO: could upgrade this to use list/dict to choose each archetype for each monster manually
         self._not_undead = False
         for monster in monsters_name_list:
             for _ in range(10):
