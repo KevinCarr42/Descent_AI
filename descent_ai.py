@@ -1098,10 +1098,10 @@ class DescentScenario:
         if not keep_monsters:
             self.monsters_obj = Monsters(self._n_monsters, self.N_ENCOUNTERS, self._boss, self._sorted_battles, self._use_all_minis)
             self.encounters['monsters'] = {i+1:x for i, x in enumerate(self.monsters_obj.encounters.values())}
-            self.label_dict = self.ai_overlord.label_dict
 
         if not keep_archetypes or not keep_monsters:  # can't keep AI if new monsters are chosen (with current funcionality)
             self.ai_overlord = AIOverlord(self.monsters_obj.quest_monsters, self.monsters_obj.quest_boss)
+            self.label_dict = self.ai_overlord.label_dict
             
         self.label_map = self.MAP_TEMPLATE.copy()
         self.monster_map = self.MAP_TEMPLATE.copy()
