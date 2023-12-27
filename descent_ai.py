@@ -478,8 +478,8 @@ class DescentScenario:
     def number_of_big_tiles(self):
         return len([x for x in self.unused_tiles if x[0]=='S' or x[0]=='R'])
     
-    def ai_summary(self, show_boss=True):
-        return self.ai_overlord.summary(show_boss)
+    def ai_summary(self, show_boss=True, monsters_to_display=None):
+        return self.ai_overlord.summary(show_boss, monsters_to_display)
 
     def ai_boss_summary(self):
         return self.ai_overlord.boss_summary()
@@ -1055,9 +1055,12 @@ class DescentScenario:
         )
 
         # ai textblock
+        list_of_monsters_to_show = None if not show_up_to_area_n else sorted(list(
+            {item.replace(' Master', '').replace(' Boss', '') for i in range(1, show_up_to_area_n+1) for item in self.encounters['monsters'].get(i, [])}
+        ))
         if show_boss is None:
             show_boss = show_up_to_area_n >= self.N_ENCOUNTERS if show_up_to_area_n else True
-        plt.text(y+2, -0.5, self.ai_summary(show_boss), fontsize=14, ha='left', va='top', wrap=True)
+        plt.text(y+2, -0.5, self.ai_summary(show_boss, monsters_to_display=list_of_monsters_to_show), fontsize=14, ha='left', va='top', wrap=True)
 
         plt.show()
 
