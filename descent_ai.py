@@ -33,11 +33,6 @@ def get_object_colour_id(name_of_colour):
         colour_id = 99  # anything not in the 
     return colour_id
 
-# create text block
-def append_text(text, new_text, sep='\n'):
-    return text + sep + str(new_text)
-
-
 class Treasures:
     ALL_AVAILABLE_TREASURE_MARKERS = {
         'healing_potion': 9, 
@@ -1226,91 +1221,124 @@ class MonsterAI:
             monster = f"{self.archetype} {self.monster_name}"
         else:
             monster = f"{self.monster_name} {self.archetype}"
-        text = append_text(text, label+monster)
-        text = append_text(text, '------------------------------------------------------------------\n')
+        text += f'\n{label}{monster}\n------------------------------------------------------------------\n'
 
         if pd.notnull(self.special):
-            text = append_text(text, f'Special Powers: {self.special}'.title().replace('Hp', 'HP'))
+            text += f'\nSpecial Powers: {self.special}'.title().replace('Hp', 'HP')
         if self.boss:
-            text = append_text(text, f'Boss Special Powers: {self.boss_powers}')
+            text += f'\nBoss Special Powers: {self.boss_powers}'
 
-        text = append_text(text, f'Target: {self.target}'.title().replace('Hp', 'HP'))
+        text += f'\nTarget: {self.target}'.title().replace('Hp', 'HP')
 
         attack_type = MONSTER_DF.loc[MONSTER_DF['name']==self.monster_name, 'attack_type'].iloc[0]
         if attack_type == 'melee':
             attack_range = 1 if 'reach' in MONSTER_DF.loc[MONSTER_DF.name==self.monster_name, 'abilities'].iloc[0].lower() else 0
-            text = append_text(text, f'Attack Range: {attack_range}\n')
+            text += f'\nAttack Range: {attack_range}\n'
         else:
             attack_range = self.range
-            text = append_text(text, f'Attack Range: {attack_range-1} to {attack_range+1} \n')
+            text += f'\nAttack Range: {attack_range-1} to {attack_range+1} \n'
 
-        text = append_text(text, 'Combat AI Instructions')
-        text = append_text(text, '----------------------')
+        text += '\nCombat AI Instructions\n----------------------'
 
         if attack_type == 'melee':
             if pd.notnull(self.at_range):
-                text = append_text(text, f'If at attack range: {self.at_range}')
+                text += f'\nIf at attack range: {self.at_range}'
             if pd.notnull(self.gt_range):
-                text = append_text(text, f'If within {self.movement + attack_range} spaces: {self.gt_range}')
+                text += f'\nIf within {self.movement + attack_range} spaces: {self.gt_range}'
             if pd.notnull(self.gt_move_range):
-                text = append_text(text, f'Otherwise: {self.gt_move_range}')
+                text += f'\nOtherwise: {self.gt_move_range}'
         else:
             if pd.notnull(self.lt_range):
-                text = append_text(text, f'If closer than {self.range-1} spaces: {self.lt_range}')
+                text += f'\nIf closer than {self.range-1} spaces: {self.lt_range}'
             if pd.notnull(self.at_range):
-                text = append_text(text, f'If {attack_range-1} to {attack_range+1} spaces: {self.at_range}')
+                text += f'\nIf {attack_range-1} to {attack_range+1} spaces: {self.at_range}'
             if pd.notnull(self.gt_range):
-                text = append_text(text, f'If within {self.movement + attack_range} spaces: {self.gt_range}')
+                text += f'\nIf within {self.movement + attack_range} spaces: {self.gt_range}'
             if pd.notnull(self.gt_move_range):
-                text = append_text(text, f'Otherwise: {self.gt_move_range}')
+                text += f'\nOtherwise: {self.gt_move_range}'
         
         return text + '\n'
 
 
 class AIOverlord:
-
-    # TODO (maybe): could add functionality to the AI summary to only show monsters that have been revealed so far
-    '''
-        for encounter in d.encounters['monsters'].values():
-            monsters = sorted(list({x.replace('Master', '').strip() for x in encounter}))
-            print(monsters)  # <- filter by this list when showing summaries
-    '''
+    """
+    if monster_list_or_dict is a dictionary, 
+        'boss' keyword denotes the boss monstertype
+        'boss_type_minions' will default to False if not found in the dict, but can be used to also use this type for minions
+        this monstertype must be listed with an archetype along with all other monster types
+    if monster_list_or_dict is a list,
+        just list the monsters you want, and randomness will choose archetypes
+        if you want a boss, use boss_monster_name, otherwise there will be no boss
+    """
         
-    def __init__(self, monsters_name_list, boss_monster_name=None, all_undead=True, archetype=None):
+    def __init__(self, monsters_list_or_dict, boss_monster_name=None, all_undead=True, archetype=None):
         self.monsters = dict()
         self._archetype = archetype  # TODO: could upgrade this to use list/dict to choose each archetype for each monster manually
         self._not_undead = False
-        for monster in monsters_name_list:
-            for _ in range(10):
-                self.monsters[monster] = MonsterAI(monster, self._archetype)
-                if self._not_undead and self.monsters[monster].archetype == 'Undead':
-                    continue
-                if all_undead and self.monsters[monster].archetype == 'Undead':
-                    self._archetype = 'Undead'
+        if type(monsters_list_or_dict) == list:
+            for monster in monsters_list_or_dict:
+                for _ in range(10):
+                    self.monsters[monster] = MonsterAI(monster, self._archetype)
+                    if self._not_undead and self.monsters[monster].archetype == 'Undead':
+                        continue
+                    if all_undead and self.monsters[monster].archetype == 'Undead':
+                        self._archetype = 'Undead'
+                        break
+                    if all_undead and self.monsters[monster].archetype != 'Undead':
+                        self._not_undead = True
                     break
-                if all_undead and self.monsters[monster].archetype != 'Undead':
-                    self._not_undead = True
-                break
-        self.boss = None if not boss_monster_name else MonsterAI(boss_monster_name, self._archetype, boss=True)
+            self.boss = None if not boss_monster_name else MonsterAI(boss_monster_name, self._archetype, boss=True)
+        elif type(monsters_list_or_dict) == dict:
+            if 'boss' in monsters_list_or_dict:
+                boss_monster_name = monsters_list_or_dict.pop('boss')
+                if 'boss_type_minions' in monsters_list_or_dict:
+                    boss_type_minions = monsters_list_or_dict.pop('boss_type_minions')
+                else:
+                    boss_type_minions = False
+                if boss_type_minions:
+                    boss_archetype = monsters_list_or_dict['boss']
+                else:
+                    boss_archetype = monsters_list_or_dict.pop(boss_monster_name)
+                self.boss = MonsterAI(boss_monster_name, boss_archetype, boss=True)
+            else:
+                self.boss = None
+
+            for monster, archetype in monsters_list_or_dict.items():
+                self.monsters[monster] = MonsterAI(monster, archetype)
+        else:
+            raise ThisObjectNeedsBetterMonsterDataError
+
         self.label_dict = {m:chr(i+65) for i,m in enumerate(list(self.monsters.keys()) + [self.boss.monster_name + ' Boss'])}
 
-    def summary(self, show_boss=True):
+    def summary(self, show_boss=True, monsters_to_display=None):
+        # filter results to display
+        if monsters_to_display:
+            monster_list = monsters_to_display
+            if self.boss.monster_name in monster_list:
+                show_boss = True if show_boss else False
+                if self.boss.monster_name not in self.monsters.keys():
+                    monster_list.remove(self.boss.monster_name)
+            else:
+                show_boss = False
+            monster_obj_list = [x for x in self.monsters.values() if x.monster_name in monster_list]
+        else:
+            monster_obj_list = list(self.monsters.values())
+
         text = '***************************  MONSTERS  ***************************\n'
-        for monster in self.monsters.values():
-            text = append_text(text, monster.summary(self.label_dict[monster.monster_name]))
+        for monster in monster_obj_list:
+            text += '\n' + monster.summary(self.label_dict[monster.monster_name])
         if show_boss and self.boss:
-            text = append_text(text, '\n*****************************  BOSS  *****************************\n')
-            text = append_text(text, self.boss.summary(self.label_dict[self.boss.monster_name+' Boss']))
-        append_text(text, '******************************************************************')
-        return text
+            text += '\n*****************************  BOSS  *****************************\n'
+            text += '\n' + self.boss.summary(self.label_dict[self.boss.monster_name+' Boss'])
+        return text + '\n******************************************************************'
 
     def boss_summary(self):
         text = '\n*****************************  BOSS  *****************************\n'
         if self.boss:
-            text = append_text(text, self.boss.summary(self.label_dict[self.boss.monster_name+' Boss']))
-            text = append_text(text, '******************************************************************')
+            text += '\n' + self.boss.summary(self.label_dict[self.boss.monster_name+' Boss'])
+            text += '\n******************************************************************'
         else:
-            text = append_text(text, 'There is no boss for this quest.')
+            text += '\nThere is no boss for this quest.'
         return text
 
 
@@ -1333,7 +1361,7 @@ class AIQuest:
     def encounter_summary(self):
         text = '**************************  ENCOUNTERS  **************************\n'
         for encounter in self.monster_obj.encounters.values():
-            text = append_text(text, encounter)
+            text += '\n' + encounter
         return text
 
 
