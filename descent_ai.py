@@ -1367,26 +1367,17 @@ class AIOverlord:
         return monsters_dict
 
 
-class AIQuest:
+class AIQuestMonsters:
     def __init__(self, n_monsters=5, n_encounters=4, boss=True, sorted_battles=True, use_all_minis=False, all_undead=True, archetype=None):
         self.monster_obj = Monsters(n_monsters, n_encounters, boss, sorted_battles, use_all_minis)
-        self.monsters = self.monster_obj.quest_monsters
-        self.boss = self.monster_obj.quest_boss
-        self.overlord_obj = AIOverlord(self.monsters, self.boss, all_undead, archetype)
 
-    def summary(self):
-        return self.encounter_summary() + '\n\n' + self.overlord_obj.summary()
-
-    def monsters_summary(self, show_boss=False):
-        return self.overlord_obj.summary(show_boss)
-
-    def boss_summary(self):
-        return self.overlord_obj.boss_summary()
-
-    def encounter_summary(self):
-        text = '**************************  ENCOUNTERS  **************************\n'
-        for encounter in self.monster_obj.encounters.values():
-            text += '\n' + encounter
-        return text
+    @property
+    def ai_overlord_attributes(self):
+        monsters_list = list()
+        for monster in self.monster_obj.quest_monsters:
+            monsters_list.append(monster)
+        if self.monster_obj.quest_boss:
+            boss = self.monster_obj.quest_boss
+        return monsters_list, boss
 
 
