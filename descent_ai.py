@@ -490,6 +490,10 @@ class DescentScenario:
     def print_ai_boss_summary(self):
         print(self.ai_boss_summary())
 
+    @property
+    def ai_overlord_attributes(self):
+        return self.ai_overlord.ai_overlord_attributes
+
     # procedural map generation
 
     def choose_random_tile(self):
@@ -1313,7 +1317,7 @@ class AIOverlord:
 
         self.label_dict = {m:chr(i+65) for i,m in enumerate(list(self.monsters.keys()) + [self.boss.monster_name + ' Boss'])}
 
-    def summary(self, show_boss=True, monsters_to_display=None):
+    def summary(self, show_boss=True, monsters_to_display=None, print_summary=False):
         # filter results to display
         if monsters_to_display:
             monster_list = monsters_to_display
@@ -1333,16 +1337,34 @@ class AIOverlord:
         if show_boss and self.boss:
             text += '\n*****************************  BOSS  *****************************\n'
             text += '\n' + self.boss.summary(self.label_dict[self.boss.monster_name+' Boss'])
-        return text + '\n******************************************************************'
+        text += '\n******************************************************************'
+        if print_summary:
+            print(text)
+        else:
+            return text
 
-    def boss_summary(self):
+    def boss_summary(self, print_summary=False):
         text = '\n*****************************  BOSS  *****************************\n'
         if self.boss:
             text += '\n' + self.boss.summary(self.label_dict[self.boss.monster_name+' Boss'])
             text += '\n******************************************************************'
         else:
             text += '\nThere is no boss for this quest.'
-        return text
+        if print_summary:
+            print(text)
+        else:
+            return text
+    
+    @property
+    def ai_overlord_attributes(self):
+        monsters_dict = dict()
+        for monster, obj in self.monsters.items():
+            monsters_dict[monster] = obj.archetype
+        if self.boss:
+            monsters_dict[self.boss.monster_name] = self.boss.archetype
+            monsters_dict['boss'] = self.boss.monster_name
+            # there is no way to determine 'boss_type_minions' without quest knowledge, so left null/False
+        return monsters_dict
 
 
 class AIQuest:
